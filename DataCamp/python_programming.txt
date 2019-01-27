@@ -1,0 +1,201 @@
+#dictionary keys
+dict = {key:value}
+dict.keys()
+dict.values()
+
+# delete from list or dictionary
+lst = []
+dict = {}
+del(lst[i])
+del(dict[i])
+
+# looping over list including indexes : enumerate 
+for index, height in enumerate([1,2,3,4]):	
+	print("index " + str(index) + ": " + str(height))
+
+# looping over dict
+for key, value in my_dict.items():
+	print(key, value)
+
+# looping over numpy array
+for val in np.nditer(my_array):
+	print(val)
+
+# dictionary comprehension
+dict1 = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
+double_dict1 = {k:v*2 for (k,v) in dict1.items()}
+new_dict = {n:n**2 for n in range(10) if n%2 == 0}
+
+#scope
+global (available in full script)
+nonlocal (available in outer function)
+
+
+# function with flexible arguments
+def add_all(*args):
+    """sums all values in *args together"""
+    for i in args:
+	sum_all += i
+    return sum_all
+
+def print_all(**kwargs):   #keywords
+    """print out key-value paris in **kwargs"""
+    for k,v in kwargs.items():
+	print(k + ': ' + v)
+
+# lambda functions  # oftens returns object so store result = list(map(func, seq))
+map(func, seq)  # map() applies function to all elements in sequence 
+fe :map(lambda x : x ** 2, lst_nrs)
+
+filter(cond, seq)  # filters sequence on condition
+fe: filter(lambda s: len(s) > 6, lst_string)
+
+from functools import reduce
+reduce(func, seq) # returns a single value
+fe: reduce(lambda x,y: x + y, lst_of_nrs)  #will add all numbers up to return single value
+
+
+# try, except, raise
+def sqrt(x): 
+    """returns square root of number"""
+    if x < 0: #we don't want negative numbers and a complex number as a result
+	raise ValueError("x must be non-negative")
+    try:
+	return x ** 0.5
+    except TypeError:
+	print("x must be an int or float")
+
+# iterators: iter() & next()
+""" 
+An iterable is an object that can return an iterator, 
+while an iterator is an object that keeps state and 
+produces the next value when you call next() on it. 
+"""
+
+word = 'Da'
+it = iter(word)
+next(it)
+>> 'D'
+next(it)
+>> 'a'
+next(it)
+>> StopIteration Error
+
+word = 'Data'
+it = iter(word)
+print(*it)
+>> D a t a
+print(*it)
+>> EMTPTY!!  => Once iterated, the iterator "it" has to be defined again.
+
+# iterating over file
+file = open('file.txt')
+it = iter(file)
+print(next(it))
+>> This is the first line.
+print(next(it))
+>> This is the second line.
+
+# 1 Googol = 10^100 => 100 zero's :o
+
+# enumerate
+for i, v in enumerate(some_list, start=10):
+	print(i,v)
+>> 10 item1
+>> 11 item2
+>> .. ....
+
+# zip
+list1 = ['a', 'b','c']
+list2 = ['1', '2', '3']
+z = zip(list1, list2)   
+print(*z)      
+>> ('a', '1') ('b', '2') ('c', '3')
+listA, listB = zip(*z)   # unpacking zip object
+z_list = list(z)
+print(z_list)
+>> [('a', '1'), ('b', '2'), ('c', '3')]
+
+for z1, z2 in zip(list1, list2):
+	print(z1, z2)
+>> a 1
+>> b 2
+>> c 3
+
+
+# list comprehensions   - []
+pairs_2 = [(num1, num2) for num1 in range(0,2) for num2 in range(6,8)]
+print(pairs2)
+>> [(0,6), (0,7), (1,6), (1,7)]
+
+[num ** 2 for num in range(10) if num % 2 == 0]  # returns only even results   [0,4,16,36,64]
+[num ** 2 if num % 2 == 0 else 0 for num in range(10)]    # returns [0,0,4,0,16,0,36,0,64,0]
+
+# dictionary comprehension   - {}
+{num: -num for num in range(5)}
+>> {0:0, 1:-1, 2:-2, 3:-3, 4:-4}
+
+
+# generators ("sequence" in ODI)    - ()
+'''create iterables without storing fully in memory (like list/dict comprehensions), 
+but can return next item on the fly.'''
+
+(num for num in range(10**100)
+
+# generator function
+def num_sequence(n):
+'''generates values from 0 to n.''' 
+    i = 0
+    while i < n:
+	yield i
+	i += 1
+
+# importing data into python
+filename = 'file_name'
+file = open(filename, mode='r')  #read
+file = open(filename, mode='w')  #write
+text = file.read()   #full read of file
+file.readline()  #prints next line
+file.close()
+
+with open(filename, mode='r') as file:   # "context manager"   # best practice way of opening files
+	print(file.read())
+
+file.closed   #returns True/False 
+
+# IPython magic commands
+! ls    # '!' gives you access to shell commands
+
+# library os
+import os
+wd = os.getcwd()  #returns current working directory as string
+os.listdir(wd)  #returns all files in current working directory
+
+# flat files = text files containing records like .txt or .csv files
+
+# pickled files = converting python object into sequence of bytes/bytestream
+import pickle
+with open('pickled_fruit.pkl', 'rb') as file:   #read as bytes
+    data = pickle.load(file)
+print(data)
+>> {'peaches': 13, 'apples': 4, 'oranges': 11}
+
+int(True)
+>> 1
+int(False)
+>> 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

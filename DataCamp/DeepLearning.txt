@@ -1,0 +1,115 @@
+### DEEP LEARNING ###
+
+Forward propagation = forwarding weights of hidden layer nodes from input to output
+
+Activation functions = functions applied to each node
+
+ReLU = Rectified Linear Activation  (___/ type functions)
+relu(input): takes a single number as input and returns 0 if input is negative and the input if the input is positive (=max(0,input))
+
+from sklearn.metrics import mean_squared_error
+
+gradient descent : update weights according to slope
+=> learning rate : learning rate * slope
+
+Backpropagation = using estimation error for updating weights of nodes backwards from output to input
+
+Stochastic Gradient Descent:
+- calculate slopes on subset of data ('batch')
+- use different batch of data to calculate next update
+- start over from beginning once all data is used
+- each time through training data is called an 'epoch'
+- when slopes are calculated on one batch at a time = stochastic gradient descent
+
+
+### KERAS ###
+
+=> Specify architecture, compile, fit, predict
+
+import numpy as np
+import keras
+from keras.layers import Dense
+from keras.models import Sequential
+predictors = np.loadtxt('test.csv', delimiter=',')
+n_cols = predictors.shape[1]
+model = Sequential()
+model.add(Dense(100, activation='relu', input_shape= (n_cols,))) 	#hidden layer 1
+model.add(Dense(100, activation='relu')) 				#hidden layer 2
+model.add(Dense(1))  							#output layer = 1 unit for Regression models (!)
+=> Specify optimizer: learning rate
+
+model.compile(optimizer='adam', loss='mean_squared_error')  #Adam is a smart optimizer!
+model.fit(predictors, target)
+
+=> Classification models
+'categorical_crossentropy' (other loss function, similar to log loss)
+
+'softmax' activation function
+
+import keras
+from keras.layers import Dense
+from keras.models import Sequential
+from keras.utils import to_categorical
+data = pd.read_csv()
+predictors = data.as_matrix()
+target = to_categorical(data.target_column)
+model = Sequential()
+model.add(Dense(100, activation='relu', input_shape=(n_cols,)))		# specify input shape in first layer
+model.add(Dense(100, activation='relu'))
+model.add(Dense(100, activation='relu'))
+model.add(Dense(2, activation='softmax'))   	# output layer = 2 units for Classification problems + softmax activation function (!)
+model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
+model.fit(predictors, target)
+
+from keras.optimizers import SGD
+'sgd' loss function = Stochastic Gradient Descent
+
+=> Using models
+from keras.models import load_model
+model.save('model_file.h5')
+my_model = load_model('my_model.h5')
+predictions = my_model.predict(data_to_predict_with)
+probability_true = predictions[:,1]
+
+=> Validation in deep learning
+- commonly used validation split rather than cross-validation
+- deep learning widely used on large datasets
+- single validation score is based on large amount of data, and is reliable
+- repeated training from cross-validation would take a long time
+
+model.fit(predictors, target, validation_split=0.3)
+
+=> Early Stopping (of optimization)
+from keras.callbacks import EarlyStopping
+early_stopping_monitor = EarlyStopping(patience=2) #stop optimization when validation loss hasn't improved for 2 epochs
+model.fit(predictors, target, validation_split=0.3, epochs=20, callbacks= [early_stopping_monitor]) 
+=> because of EarlyStopping, possible to increase number of epochs to higher than the default 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

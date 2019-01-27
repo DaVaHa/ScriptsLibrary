@@ -1,0 +1,387 @@
+PREDICTING EMPLOYEE CHURN
+--------------------------
+
+CONCEPTS
+--------
+
+Dummy Trap = situation where different dummy variables contain the same information
+=> Fixed by deleting one of the dummy columns
+
+Train/Test split: train data set to develop model vs test data set to validate model
+
+Overfitting = when model works good on training/development data but not on test/future data (Scores of Train & Test should be close to each other)
+=> Use train/test data sets (to avoid overfitting on training data)
+=> Use cross-validation (to avoid overfitting (hyperparameters) on test data)
+=> Limit tree depth or minimum sample size in leafs
+
+
+Decision Tree = aims to achieve partitions in the nodes that are as pure as possible
+
+=> www.webgraphviz.com to visualize decision tree
+
+Confusion matrix:
+       Reality:   0    	   1
+Predicted 0 : TrueNeg   FalseNeg (Type II)
+Predicted 1 : FalsePos  TruePos
+	      (Type I)		
+	
+Evaluation metrics:
+Recall/sensitivity = TP/(TP+FN)  (% of correct predictions among 1s (fe leavers))
+Specificity = TN/(TN+FP)  (% of correct predictions among 0s (fe stayers))
+Precision/accuracy = TP/(TP+FP) (% of correct predictions on True predictions)
+
+AUC (Area Under Curve) score: vertical axis=recall, horizontal=1-specificity, blue line=ROC, green=baseline, area between blue and green=AUC
+=> use if you want good prediction on all evaluation metrics
+
+Hyperparameter tuning => to avoid overfitting test data set (GridSearch): cross-validation 
+
+To Combine CV & GridSearchCV:
+http://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html#sphx-glr-auto-examples-model-selection-plot-nested-cross-validation-iris-py
+
+
+1. Read csv into DataFrame & inspect categorical values
+import pandas as pd
+data = pd.read_csv('turnover.csv')
+print(data.head())
+print(date.info())
+print(data.department.unique())
+print(data.salary.unique())
+
+
+2. Encoding categories 
+### ORDINAL ###
+=> order in categories: fe 'low', 'medium', 'high'
+# change type to categorical, provide correct order & encode with integer values
+data.salary = data.salary.astype('category')
+data.salary = data.salary.cat.reorder_categories(['low', 'medium', 'high'])
+data.salary = data.salary.cat.codes
+
+## NOMINAL ###
+=> no order in categories: fe 'HR', 'Finance', 'CRM'
+# get dummies per category, save inside new dataframe & delete one column (as its information is already included in the other columns)
+departments = pd.get_dummies(data.department)
+departments = departments.drop('HR', axis=1)
+
+
+3. Join categorical dataframe to original dataframe
+# Drop the "accounting" column to avoid "dummy trap"
+departments = departments.drop('accounting', axis=1)
+# Drop the old column "department" as we do not need it anymore
+data = data.drop('department', axis=1)
+# Join the new dataframe "departments" to our employee dataset
+data = data.join(departments)
+print(data.head())
+
+
+4. Descriptive statistics
+### CHURN RATE ###
+# Get total number of observations
+n_employees = len(data)
+# Print number of employees who left/stayed
+print(data.churn.value_counts())  #churn column contains 1 if left, else 0
+# Print the percentage of employees who left/stayed
+print(data.churn.value_counts()/n_employees*100)
+
+### Visualize correlations in heat map ###
+import matplotlib.pyplot as plt
+import seaborn as sns
+corr_matrix = data.corr()
+sns.heatmap(corr_matrix)
+plt.show()
+
+
+5. Splitting the data into train & test data
+from sklearn.model_selection import train_test_split
+target_train, target_test, features_train, features_test = 
+	train_test_split(target, features, test_size=0.25)
+
+# Set the target and features
+# Choose the dependent variable column and set it as target
+target = data.churn
+# Drop the above chosen column and set everything else as features
+features = data.drop('churn',axis=1)
+
+# Import the function for splitting dataset into train and test
+from sklearn.model_selection import train_test_split
+# Use that function to create the splits both for target and for features
+# Set the test sample to be 25% of your observations
+target_train, target_test, features_train, features_test = train_test_split(target,features,test_size=0.25,random_state=42)
+
+
+6. Decision Tree : splitting factor
+=> Splitting rules:
+- Gini: 2*p*(1-p)
+- Entropy: -p*log(p) - (1-p)*log(1-p)
+
+#number of people who stayed/left
+stayed = 37
+left = 1138
+total = stayed + left
+#gini index
+gini = 2*(stayed/total)*(left/total)
+
+# Gini index in case of splitting by variable A or B
+gini_A = 0.65
+gini_B = 0.15
+# check which Gini is lower and use it for spliting
+if gini_A < gini_B:
+    print("split by A!")
+else:
+    print("split by B!")
+
+
+7. Predicting Churn with Decision Tree (sklearn)
+# Import the classification algorithm
+from sklearn.tree import DecisionTreeClassifier
+# Initialize it and call model by specifying the random_state parameter
+model = DecisionTreeClassifier(random_state=42)
+# Apply Decisition Tree model to fit Features to the Target
+model.fit(features_train, target_train)
+# Check the accuracy of the prediction (in percentage points) for the training set
+model.score(features_train,target_train)*100
+# Check the accuracy of the prediction for the test set
+model.score(features_test,target_test)*100
+
+
+8. Interpretation & visualization of the decision tree
+=> www.webgraphviz.com to visualize decision tree
+
+# Import the tree graphical visualization export function
+from sklearn.tree import export_graphviz
+# Apply Decision Tree model to fit Features to the Target
+model.fit(features_train,target_train)
+# Export the tree to a dot file
+export_graphviz(model,"tree.dot")
+
+
+9. Tuning classifier
+### Limiting Decision Tree Depth ###
+model_depth_5 = DecisionTreeClassifier(max_depth=5, random_state=42)
+
+### Limiting Decision Tree Leafs ###
+model_sample_100 = DecisionTreeClassifier(min_samples_leaf=100, random_state=42)
+
+# Initialize the DecisionTreeClassifier while limiting the depth of the tree to 5
+model_depth_5 = DecisionTreeClassifier(max_depth=5, random_state=42)
+print(model_depth_5.fit(features_train,target_train))
+# Print the accuracy of the prediction for the training & test data set
+print(model_depth_5.score(features_train,target_train)*100)
+print(model_depth_5.score(features_test, target_test)*100)
+
+# Initialize the DecisionTreeClassifier while limiting the sample size in leaves to 100
+model_sample_100 = DecisionTreeClassifier(min_samples_leaf=100, random_state=42)
+model_sample_100.fit(features_train, target_train)
+# Print the accuracy of the prediction (in percentage points) for the training & test data set
+print(model_sample_100.score(features_train,target_train)*100)
+print(model_sample_100.score(features_test,target_test)*100)
+
+
+10. Evaluating the model
+
+=> metric_score(true_Y, predicted_Y)
+
+### Precision score ###  TP/(TP+FP)  ### = Accuracy
+from sklearn.metrics import precision_score
+# Predict whether employees will churn using the test set
+prediction = model.predict(features_test)
+# Calculate precision score by comparing target_test with the prediction
+precision_score(target_test, prediction)
+
+## Recall score ###  TP/(TP+FN)  ### = Sensitivity
+from sklearn.metrics import recall_score
+# Use the initial model to predict churn
+prediction = model.predict(features_test)
+# Calculate recall score by comparing target_test with the prediction
+recall_score(target_test, prediction)
+
+
+11. AUC score (Area Under (ROC) Curve)
+=> used if all evaluation metrics (FN & FP) are important
+
+### AUC score ###
+from sklearn.metrics import roc_auc_score
+# Use initial model to predict churn (based on features of the test set)
+prediction = model.predict(features_test)
+# Calculate ROC/AUC score by comparing target_test with the prediction
+roc_auc_score(target_test, prediction)
+
+
+12. Class balance
+=> To not use inherent probabilities
+
+# Initialize the DecisionTreeClassifier 
+model_depth_5_b = DecisionTreeClassifier(max_depth=5,class_weight='balanced',random_state=42)
+# Fit the model
+model_depth_5_b.fit(features_train, target_train)
+# Print the accuracy of the prediction (in percentage points) for the test set
+print(model_depth_5_b.score(features_test,target_test)*100)
+
+# Print the recall score & the ROC/AUC score
+print(recall_score(target_test,prediction))
+print(roc_auc_score(target_test,prediction))
+# Initialize the model
+model_depth_7_b = DecisionTreeClassifier(max_depth=7, class_weight='balanced')
+# Fit it to the training component
+model_depth_7_b.fit(features_train, target_train)
+# Make prediction using test component
+prediction_b = model_depth_7_b.predict(features_test)
+# Print the recall score & the ROC/AUC score of balanced model
+print(recall_score(target_test, prediction_b))
+print(roc_auc_score(target_test, prediction_b))
+
+
+13. Hyperparameter tuning
+GridSearch & cross validation
+
+### CROSS VALIDATION ###
+# Import the function for implementing cross validation
+from sklearn.model_selection import cross_val_score
+# Use that function to print the cross validation score for 10 folds
+print(cross_val_score(model, features, target,cv=10))
+
+### Define GridSearch variables in dict ###
+# Generate values for maximum depth
+depth = [i for i in range(5,21)]
+# Generate values for minimum sample size
+samples = [i for i in range(50,500,50)]
+# Create the dictionary with parameters to be checked
+parameters = dict(max_depth=depth,min_samples_leaf=samples)
+
+### GridSearchCV ###
+from sklearn.model_selection import GridSearchCV
+# set up parameters: done
+parameters = dict(max_depth=depth,min_samples_leaf=samples)
+# initialize the param_search function using default model and parameters above
+param_search = GridSearchCV(model, parameters)
+# fit the param_search to the training dataset
+param_search.fit(features_train,target_train)
+# print the best parameters found
+print(param_search.best_params_)
+
+
+14. Feature importances
+# Calculate feature importances
+feature_importances = model_best.feature_importances_
+# Create a list of features
+feature_list = list(features)
+# Save the results inside a DataFrame
+relative_importances = pd.DataFrame(index=feature_list, data=feature_importances, columns=["importance"])
+# Sort the DataFrame to learn most important features
+print(relative_importances.sort_values(by="importance", ascending=False).head())
+
+# select only features with relative importance higher than 1%
+selected_features = relative_importances[relative_importances.importance > 0.01]
+# create a list from those features
+selected_list = list(selected_features.index)
+# transform both features_train and features_test components to include only selected features
+features_train_selected = features_train[selected_list]
+features_test_selected = features_test[selected_list]
+print(features_test_selected.head())
+
+# initialize the best model using parameters provided in description
+model_best = DecisionTreeClassifier(max_depth=8,min_samples_leaf=150,class_weight='balanced',random_state=42)
+# fit the model using only selected features (from training set)
+model_best.fit(features_train_selected,target_train)
+# make predicttion based on selected list of features (from test set)
+prediction_best = model_best.predict(features_test_selected)
+# print the general accuracy of the model
+print(model_best.score(features_test_selected,target_test)*100)
+# print the recall score of the model
+print(recall_score(prediction_best, target_test)*100)
+# print the ROC/AUC score of the model
+print(roc_auc_score(prediction_best,target_test)*100)
+
+
+
+
+
+
+COMBINING CROSS VALIDATION & GRIDSEARCHCV  ## use nested CV !! (read link documentation!)
+--------------------------------------------
+http://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html#sphx-glr-auto-examples-model-selection-plot-nested-cross-validation-iris-py
+
+from sklearn.datasets import load_iris
+from matplotlib import pyplot as plt
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV, cross_val_score, KFold
+import numpy as np
+
+print(__doc__)
+
+# Number of random trials
+NUM_TRIALS = 30
+
+# Load the dataset
+iris = load_iris()
+X_iris = iris.data
+y_iris = iris.target
+
+# Set up possible values of parameters to optimize over
+p_grid = {"C": [1, 10, 100],
+          "gamma": [.01, .1]}
+
+# We will use a Support Vector Classifier with "rbf" kernel
+svm = SVC(kernel="rbf")
+
+# Arrays to store scores
+non_nested_scores = np.zeros(NUM_TRIALS)
+nested_scores = np.zeros(NUM_TRIALS)
+
+# Loop for each trial
+for i in range(NUM_TRIALS):
+
+    # Choose cross-validation techniques for the inner and outer loops,
+    # independently of the dataset.
+    # E.g "LabelKFold", "LeaveOneOut", "LeaveOneLabelOut", etc.
+    inner_cv = KFold(n_splits=4, shuffle=True, random_state=i)
+    outer_cv = KFold(n_splits=4, shuffle=True, random_state=i)
+
+    # Non_nested parameter search and scoring
+    clf = GridSearchCV(estimator=svm, param_grid=p_grid, cv=inner_cv)
+    clf.fit(X_iris, y_iris)
+    non_nested_scores[i] = clf.best_score_
+
+    # Nested CV with parameter optimization
+    nested_score = cross_val_score(clf, X=X_iris, y=y_iris, cv=outer_cv)
+    nested_scores[i] = nested_score.mean()
+
+score_difference = non_nested_scores - nested_scores
+
+print("Average difference of {0:6f} with std. dev. of {1:6f}."
+      .format(score_difference.mean(), score_difference.std()))
+
+# Plot scores on each trial for nested and non-nested CV
+plt.figure()
+plt.subplot(211)
+non_nested_scores_line, = plt.plot(non_nested_scores, color='r')
+nested_line, = plt.plot(nested_scores, color='b')
+plt.ylabel("score", fontsize="14")
+plt.legend([non_nested_scores_line, nested_line],
+           ["Non-Nested CV", "Nested CV"],
+           bbox_to_anchor=(0, .4, .5, 0))
+plt.title("Non-Nested and Nested Cross Validation on Iris Dataset",
+          x=.5, y=1.1, fontsize="15")
+
+# Plot bar chart of the difference.
+plt.subplot(212)
+difference_plot = plt.bar(range(NUM_TRIALS), score_difference)
+plt.xlabel("Individual Trial #")
+plt.legend([difference_plot],
+           ["Non-Nested CV - Nested CV Score"],
+           bbox_to_anchor=(0, 1, .8, 0))
+plt.ylabel("score difference", fontsize="14")
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+

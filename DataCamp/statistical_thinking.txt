@@ -1,0 +1,186 @@
+# Graphical EDA
+# seaborn visualization (built on top of matplotlib)
+import seaborn as sns
+
+# bee swarm plot
+##  "_ = plt.method" : assigning to avoid returning something
+sns.set()
+# Create bee swarm plot with Seaborn's default settings
+
+sns.swarmplot(x='species', y='petal length (cm)', data = df)
+
+
+# Label the axes
+
+_ = plt.xlabel('Species')
+
+_ = plt.ylabel('Petal Length (cm)')
+
+plt.show()
+
+
+# Empirical Cumulative Distribution Function (ECDF)
+import numpy as np
+x = np.sort(df[clm])
+y = np.arange(1, len(x)+1) / len(x)
+_ = plt.plot(x, y, marker='.', linestyle='none')
+_ = plt.xlabel()
+_ = plt.ylabel()
+plt.margins(0.02) # keeps data off plot edges
+plt.show()
+
+# ECDF function
+def ecdf(data):
+    
+	"""Compute ECDF for a one-dimensional array of measurements."""
+
+    
+	# Number of data points: n
+    
+	n = len(data)
+
+    
+	# x-data for the ECDF: x
+    
+	x = np.sort(data)
+
+    
+	# y-data for the ECDF: y
+    
+	y = np.arange(1, n+1) / n
+
+    
+	
+	return x, y
+
+
+# Quantitative EDA
+# numpy statistics
+np.mean()
+np.median()
+np.percentile(data, [25,50,75]) #returns array of percentiles
+np.var() #variance
+np.std() #standard deviation # = np.sqrt(np.var(array))
+
+# boxplots
+_ = sns.boxplot(x='', y='', data=df)
+
+# scatterplot
+_ = plt.plot(x, y, marker='.', linestyle='none')
+
+# covariance & Pearson correlation coefficient
+Pearson coefficient = covariance / [ std(x) * std(y) ]
+   = variability due to codependence / independent variability
+
+np.cov() #covariance matrix
+np.corrcoef() # Pearson correlation coefficient matrix
+
+# hacker statistics
+np.random.random() #random number between 0 and 1
+np.random.seed() # integer to manually seed random number generator for reproducibility
+
+np.random.seed(42)
+random_numbers = np.random.random(size=4)
+heads = random_numbers < 0.5
+np.sum(heads)  # 1 for True // 0 for False
+
+# Bernoulli distribution: 0 or 1 // True or False
+# Probability Mass Function (PMF)
+# Binomial distribution: n Bernoulli trials with probability p of success
+
+np.random.binomial(n, p, size=x) # x times binomial with n trials and p success probability
+samples = np.random.binomial(60,0.1,size=10000)  # 10000 times 60 trials with 0.1 probability of success
+
+# Poisson distribution: timing of next event is independent of previous event
+examples: births in given hospital, websites hits in given hour, meteor strikes, buses in Poissonville
+= number of r arrivals of Poisson process in given time interval with average rate L arrivals per interval
+example: r hits on webstite in one hour with average hit of 6 hits per hour is Poisson distributed
+
+# Poisson Distribution is limit of Binomial for low probability of success and large number of trials (=rare events)
+np.random.poisson(6, size=10000)
+
+# Probability Density Function (PDF)
+
+# Normality test
+np.random.normal(mean, std, size=1000)
+
+# Exponential distribution
+(The waiting time between arrivals of a Poisson process (rare events) is Exponentially distributed)
+np.random.exponential(mean, size)
+
+# Linear Regression with Least Squares with numpy
+slope, intercept = np.polyfit(x, y, 1)
+
+# Bootstrapping: the use of resampled data to perform statistical inference
+# bootstrap sample & bootstrap replicate : sample & replicate statistic from bootstrap data
+
+np.random.choice(list, size)
+
+# 95% confidence interval
+np.percentile(data, [2.5,97.5])
+
+# pairs bootstrap for linear regression
+
+# Hypothesis Testing : assessment of how reasonable the observed data are assuming a hypothesis is true
+# Null hypothesis
+# Permutation: random reordering of entries in an array
+np.random.permutation(data)
+
+# Test statistic: single number computed from observed data and from simulated data under Null hypothesis & serves as basis for comparison
+# p-value: probability of obtaining test statistic value that is at least as extreme as what was observed, under the assumption that the null hypothesis is true
+
+# Statistical significance: determined by smallness of a p-value
+# Null Hypothesis Significance Testing (NHST)
+
+# Pipeline:
+- clearly state Null Hypothesis
+- define test statistic
+- generate simulated data sets assuming Null hypothesis is true
+- compute test statistic for each data set
+- p-value is fraction of simulated data sets where test statistic is at least as extreme as for the real data
+
+# A/B testing
+Null hypothesis: no change observable
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

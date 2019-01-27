@@ -1,0 +1,600 @@
+import pandas as pd 
+
+# create dataframe
+names = ['United States', 'Australia', 'Japan', 'India', 'Russia', 'Morocco', 'Egypt']
+dr =  [True, False, False, False, True, True, True]
+cpc = [809, 731, 588, 18, 200, 70, 45]
+dict = { 'country':names, 'drives_right':dr, 'cars_per_cap':cpc }
+cars = pd.DataFrame(dict)
+
+# Definition of index
+row_labels = ['US', 'AUS', 'JAP', 'IN', 'RU', 'MOR', 'EG']
+cars.index = row_labels
+
+>>> cars
+     cars_per_cap        country  drives_right
+US            809  United States          True
+AUS           731      Australia         False
+JAP           588          Japan         False
+
+# [clm] returns Series object
+>>> cars['country']
+US     United States
+AUS        Australia
+JAP            Japan
+Name: country, dtype: object
+>>> type(cars['country'])
+<class 'pandas.core.series.Series'>
+
+# [[clm]] returns DataFrame object
+>>> cars[['country']]
+           country
+US   United States
+AUS      Australia
+JAP          Japan
+>>> type(cars[['country']])
+<class 'pandas.core.frame.DataFrame'>
+
+# selecting rows  
+#.loc label based vs .iloc integer index-based
+cars[1:3]  #only using slice
+cars.loc["RU"]   #Series object 
+cars.loc[["RU"]]   #DataFrame object
+cars.loc[['JAP', 'AUS']]  #multiple rows & all columns
+cars.loc[["RU", "IN", "CH"],["country", "drives_right"]]  #specific rows & columns
+cars.loc[:,["country", "drives_right"]]   #all rows & multiple columns
+
+# Print out cars_per_cap and drives_right as DataFrame
+cars.loc[:,['cars_per_cap','drives_right']]
+
+# numpy boolean operators logical_and(comp, comp2), logical_or() & logical_not()
+cpc = cars['cars_per_cap']
+between = np.logical_and(cpc > 10, cpc < 80)
+medium = cars[between]
+
+# looping over rows of dataframe
+for l,r in cars.iterrows():
+    print(l + ": " + r['country'])
+
+for index,row_values in cars.iterrows():
+    cars.loc[index,'name_length'] = len(row_values['country'])
+
+# apply function
+cars['name_length'] = cars['country'].apply(len)
+
+# iterating over data load
+'''get sum of column x of big file
+result = []
+for chunk in pd.read_csv('some_giga_file.csv', chunksize=1000):  #chunk is dataframe
+	result.append(sum(chunk['x']))
+total = sum(result)
+
+#importing data   - .csv
+data = pd.read_csv(filename)
+data = pd.read_csv(file, nrows=5, header=None)
+data.head()  #first 5 rows including header
+data.tail() #last 5 rows including header
+data_array = data.values  #numpy arrays
+
+#remove comment lines starting with # and recognize Na/NaN values
+data = pd.read_csv(file, sep='\t', comment='#', na_values='Nothing')
+
+# excel files   - .xslx
+data = pd.ExcelFile(file)  #load xlsx file
+data.sheet_names    #returns name of sheets
+df1 = data.parse('sheet_name_string')  #sheet name as string
+df2 = data.parse(0)  #sheet index as float
+df2 = data.parse(1, parse_cols=[0], skiprows=[0], names=['Country'])  #select columns, skip rows, rename columns
+
+# sas files  - .sas7bdat
+from sas7bdat import SAS7BDAT
+with SAS7BDAT('filename.sas7bdat') as file:
+    df_sas = file.to_data_frame()
+
+# stata files - .dta
+data = pd.read_stata('file.dta')
+
+# HDF5 files  (Hierarchical Data Format version 5) - .hdf5
+import h5py
+data = h5py.File('file_name.hdf5', 'r')
+
+# matlab files - .mat
+import scipy.io
+mat = scipy.io.loadmat('name.mat') #keys=MATLAB variable names ; values=objects assigned to variables
+
+# cleaning fata
+import pandas as pd
+df = pd.read_csv('text.csv')
+df.head()  # first 5 rows of dataframe
+df.tail()  # last 5 rows of dataframe 
+df.columns # column headers
+df.shape  #range of data
+df.info()  # additional info about dataframe, like memory, datatypes, ..
+
+# count values
+df.column_name.value_counts()  # gives overview of counts in column 'column_name' (dropna=True by default)
+df['continent'].value_counts(dropna=False)  # including NULL values => dropna=False
+df.country.value_counts(dropna=False).head()
+
+# statistics
+df.describe()
+
+# plotting
+df.column.plot('hist')
+
+# assert  # checks condition and raises Error if False
+assert (df.column_data > 0).all()   
+# Assert that year does not contain any missing values
+assert pd.notnull(gapminder.year).all()
+
+# data types
+df.dtypes
+df[clm] = df[clm].astype(str)
+df[clm] = df[clm].to_numeric()
+
+# string operations with regex
+str.contains()
+
+# invert boolean
+~
+
+# create tidy dataframe
+pd.melt(frame=df, id_vars='name', value_vars=['treatment a','treatment b'], var_name='treatment', value_name='result')
+
+# show random n rows from dataframe
+df.sample(n)
+
+# pivoting data
+pd.pivot(index='date', columns='element', values='value')  #gives error with duplicate values
+pd.pivot_table(index='date', columns='element', values='value', aggfunc=np.mean)  # performs aggregate function on data #default: np.mean
+
+# resetting index after pivot (to avoid multi-index)
+df.reset_index()
+
+# parse columns
+df['sex'] = df.column_name.str[0]  #parses first character of column "column_name" and puts it in new column 'sex'
+
+# split column
+df['str_split'] = df.clm.str.split('_')   # split default by space 
+df['type'] = df.str_split.str.get(0)  #get first item of column
+df['country'] = df.str_split.str.get(1) #get second item of column
+
+# concatenate dataframes , requires a list of dataframes 
+pd.concat([df1,df2]) # keeps original index labels (rows)
+pd.concat([df1,df2], ignore_index=True) # resets index labels (rows)
+
+pd.concat([df1,df2,df3], axis=1) # column concatenation (default: axis=0 for rows)
+
+# concatenate many files with wildcards * (=any number of characters) and ? (=any one character)
+import glob
+csv_files = glob.glob('*.csv')  # searches all csv files
+list_data = []
+for filename in csv_files:
+    data = pd.read_csv(filename)
+    list_data.append(data)
+pd.concat(list_data)
+
+# merging dataframes
+pd.merge(left=state_population, right=state_codes, left_on='state', right_on='name') 
+
+# show data types of dataframe  ('object' means string)
+df.dtypes
+
+# converting data type
+df[clm] = df[clm].astype(str)   # to string
+df[str] = df[str].astype(categorical)  # to categories # smaller in memory than string
+df[clm] = pd.to_numeric(df[clm], errors='coerce') # to number, forces all non-numeric into NaN
+
+# info about dataframe incl memory usage, total non-null values per column, ...
+df.info()
+
+
+# regular expressions
+import re
+^ 	start of string
+$  	end of string
+\$  	escape character to find '$' in string
+\d  	numerical character
+\w	alphanumeric character
+[A-Z]	any capital letter
+*  	zero or more characters
++	one or more characters
+?	zero or one character
+.  	any one character
+{} 	number of occurences
+\.  	find '.' in string
+
+pattern = re.compile('\$\d*\.\d{2}')  # to reuse regex for matching values along column
+result = pattern.match('$17.89')  #returns boolean
+print(result)
+>> True
+
+re.match(pattern, string) # returns boolean
+re.findall(pattern, string) # returns list
+
+
+# applying functions to dataframe
+df.apply(np.mean, axis=0)  # mean of column
+df.apply(np.mean, axis=1)  # mean of row
+
+
+import re
+from numpy import NaN
+pattern = re.compile('regex')
+def func(var1,var2):
+   return x
+df[new_clm] = df.apply(func, axis=1, pattern=pattern)  #axis=1 for rows
+
+
+# duplicate & missing data
+df.drop_duplicates()  #drops duplicates
+df.dropna()   #drops full row
+df.fillna('missing')   #fills missing data with 'missing'
+df[[clm1, clm2]].fillna(0)  #fill multiple columns
+
+# mean value of column
+df[clm].mean()
+
+
+# assert statement
+assert 1 == 2 # will cause error
+assert df.clm.notnull().all()  # raises error if there is NaN value in clm
+df.notnull()   # returns dataframe with booleans for each value
+df.notnull().all()  # returns columns of dataframe with booleans
+df.notnull().all().all()  # returns one boolean for dataframe
+
+
+assert df.notnull() # raises errror if there is NaN value somewhere
+assert df.notnull().all()  # raises error if there is a column with a NaN value
+assert df.notnull().all().all()  #raises error if there is a NaN value
+
+assert (df >= 0).all().all()  # checks if all values in dataframe are >= 0
+
+# dataframe
+df.shape
+df.info()
+df.columns
+df.index
+df.iloc[:5,;]
+df.head(2)
+df.tail()
+df.values
+
+# change columns or index labels
+df.columns = [list_clm_labels]
+df.index = [list_index_labels]
+df.index.name = 'NameOfIndex'
+
+# numpy NaN value
+np.nan
+
+# numpy vs pandas
+dataframe column of type: Series
+values of df column of type: numpy ndarray
+
+# zipping lists into dataframe
+zipped = list(zip(list_labels, list_cols)) #tuple
+data = dict(zipped)  #dictionary
+users = pd.DataFrame(data)  #dataframe
+OR df = pd.DataFrame(dict(zip(list_labels, list_cols)))
+
+# "broadcasting"
+df[clm] = single_value  #will update/create column with same value
+
+# importing into dataframe
+df = pd.read_csv(filepath, header=None, names=list_of_clm_names) #if data doesn't contain headers
+
+# na_values
+df = pd.read_csv(filepath, na_values=' -1') #' -1' to target integers!! (note the space as first character)
+df = pd.read_csv(filepath, na_values={'clm_name':[' -1']}) #possible to use dictionaries to target specific columns
+
+# date columns
+df = pd.read_csv(filepath, parse_dates=[[0,1,2]])  #combines columns into one datetime column
+
+# try to parse index into datetime index
+df = pd.read_csv(filepath, index_col='index_name', parse_dates=True)
+
+# writing files
+df.to_csv('filepath.csv')
+df.to_csv('filepath.tsv', sep='\t')
+df.to_excel('filepath.xlsx')
+
+# comments in source data
+df2 = pd.read_csv(file_messy, delimiter=' ', header=3, comment='#') #to ignore rows starting with a '#'
+
+# plotting dataframes
+import pandas as pd
+import matplotlib.pyplot as plt
+
+array = df[clm].values  #as numpy array
+plt.plot(array)
+plt.show()
+
+plt.plot(df[clm]) OR df[clm].plot()  #as pandas Series
+plt.show()
+
+df.plot()
+plt.show()
+
+df.plot(subplots=True)  #show every column on different subplot
+plt.show()
+
+#log scale on y-axis
+plt.yscale('log')
+
+# color and style and legend
+df[clm].plot(color='r', style='.-', legend=True)
+plt.axis(('2001','2002',0,100)) # to zoom in on part of graph
+plt.show()
+
+#save plot
+plt.savefig('name.jpg')
+plt.savefig('name.png')
+plt.savefig('name.pdf')
+
+# title for graph and labeling x-axis & y-axis
+plt.title('Temperature in Austin')
+
+plt.xlabel('Hours since midnight August 1, 2010')
+
+plt.ylabel('Temperature (degrees F)')
+
+## VISUALIZING ##
+df.plot(x,y, kind='scatter')
+df.plot(x,y, kind='box')
+df.plot(x,y, kind='hist')
+df.boxplot(data, group_by_column, rotation)
+
+# histogram
+df.plot(y='sepal_length',kind='hist',bins=30,range=(4,8),normed=True) #Probability Density Function (PDF)
+df.plot(y='sepal_length',kind='hist',bins=30,range=(4,8), cumulative=True, normed=True) #Cumulative Density Function (CDF)
+
+# subplots
+# This formats the plots such that they appear on separate rows
+
+fig, axes = plt.subplots(nrows=2, ncols=1)
+
+
+# Plot the PDF #Probability Density Function
+df.fraction.plot(ax=axes[0], kind='hist', bins=30, normed=True, range=(0,.3))
+
+plt.show()
+
+
+# Plot the CDF #Cumulative Density Function
+df.fraction.plot(ax=axes[1], kind='hist', bins=30, normed=True, cumulative=True, range=(0,.3))
+
+plt.show()
+
+
+#statistical numbers #ignores NULL
+df.quantile(0.25)
+df.quantile([0.25,0.75])  
+df.median()  #=df.quantile(0.5)
+df.std()
+df.mean()
+df.count()
+df.min()
+df.max()
+df.describe() # summary of above statistics
+
+# filtering dataframes
+indices = iris['species'] == 'setosa'
+setosa = iris.loc[indices,:]
+indices = iris['species'] == 'versicolor'
+versicolor = iris.loc[indices,:]
+
+# unique values
+df[clm].unique()
+
+#multiple sub boxplots
+# Display the box plots on 3 separate rows and 1 column
+
+fig, axes = plt.subplots(nrows=3, ncols=1)
+
+titanic.loc[titanic['pclass'] == 1].plot(ax=axes[0], y='fare', kind='box')
+
+
+titanic.loc[titanic['pclass'] == 2].plot(ax=axes[1], y='fare', kind='box')
+titanic.loc[titanic['pclass'] == 3].plot(ax=axes[2], y='fare', kind='box')
+
+
+plt.show()
+
+## TIME SERIES ##
+pd.read_csv(path, parse_dates=True, index_col='Date') #parses index
+df.loc['2015-05-05 12:00:00', 'clm_name']
+pd.to_datetime(['2015-2-11 20:00', '2015-2-11 21:00'])
+pd.to_datetime(date_list, format='%Y-%m-%d %H:%M') 
+df.reindex(datetime_array)
+df.reindex(datetime_array, method='ffill')  # uses previous observation to fill in NaN values
+df.reindex(datetime_array, method='bfill')  # uses next observation to fill in NaN values
+
+# downsampling
+daily_mean = sales.resample('D').mean()  # from hour to daily
+# upsampling
+two_days.resample('4H').ffill()  # from day to 4 hours, previous observation
+df.resample('A').first().interpolate('linear')  # linear interpolation
+# rolling means /moving averages
+df.rolling(window=24).mean()  # takes mean of previous 24 observations
+df.resample('D').max().rolling(window=7).mean()  # 7-day moving average of daily high
+
+#method chaining
+df.method().method().method()
+
+# string operations
+df[clm].str.upper()   # vs df[clm].apply(lambda x : x.upper())
+df[clm].str.contains('ware')  # returns Boolean Series
+df[clm].str.contains('ware').sum()  # calculates number of matches (True=1)
+
+# True=1 // False=0
+True + False = 1
+True + True = 2
+False + False = 0
+
+# datetime
+df[clm].dt.hour
+df[clm].dt.tz_localize('US/Central')
+df[clm].dt.tz_convert('US/Eastern')
+
+df.plot(kind='area')
+
+# indexing dataframes
+df[clm_label][row_label]
+df.clm[row_label]
+df.loc[row,clm]
+df.iloc[4,2]  #zero-based index
+df.loc[:,'eggs':'salt']  # all rows, some columns
+df.loc['Jan':'Apr',:]  # some rows, all columns
+df.iloc[2:5, 1:] # block of dataframe
+df.loc['Jan':'Mar',['eggs','salt']]
+df.iloc[[0,4,5], 0:2]
+df.loc['Potter':'Perry':-1] # reverse order
+
+df[clm]  # Series
+df[[clm]]  # DataFrame with single column
+
+# boolean series
+df.clm > 10
+
+# filtering with boolean
+df[df.clm > 60]
+df[(df.clm > 10) & (df.clm2 < 100)]   # AND
+df[(df.clm > 10) | (df.clm2 < 100)]   # OR
+
+# copy dataframe
+df2 = df.copy()
+
+# select all/any nonzeros columns
+df.loc[:, df2.all()]  # excludes columns with 0 value
+df.loc[:, df.any()]   # excludes columns with all 0 values
+df.loc[:, df.isnull().any()]  # return columns with any NaN
+df.loc[:, df.notnull().all()] # returns columns without any NaN
+
+# drop columns
+df.dropna(how='any') # drops columns with any NaN values in it
+df.dropna(how='all') # drop columns with all NaN values
+
+# select
+df.clm1[df.clm2 > 10]   # filter column based on value of another column
+df.clm[ df.clm2 < 1 ] = np.nan  # convert filtered column into NaN based on condition
+
+# mathematical operations
+df.clm[df.clm2 > 55] += 5
+df['new_clm'] = df.clm1 + df.clm2
+
+# transforming dataframe
+df.floordiv(12)  # floor division # convert to dozens unit
+np.floor_divide(df, 12)
+df.apply(lambda x : x // 12)
+
+df['dozens'] = df.eggs.floordiv(12) # storing transformation
+
+# index operations
+df.index = df.index.str.upper()  # uppercase index strings
+df.index = df.index.map(str.lower)  # operations on index "map" (instead of apply)
+
+# map function
+red_vs_blue = {'Obama':'blue', 'Romney': 'red'}
+
+
+# Use dictionary to map the 'winner' column to the new column: 
+
+election['color'] = election.winner.map(red_vs_blue)
+
+# pandas data structures
+indexes : sequence of labels   
+series: 1D array with index
+dataframes: 2D array with Series as columns
+
+# indexes are immutable 
+# change whole index or nothing
+
+# Series
+prices = [10.70, 10.56, 10.23, 10.15, 10.58]
+pd.Series(prices)
+days = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri']
+shares = pd.Series(prices, index=days)
+shares.index
+shares.index.name = 'weekday'  # default: None
+
+# delete column
+del df[clm]
+
+# hierarchical indexes
+df = df.set_index(['clm1', 'clm2']) # two column index
+df.index.names    # instead of .name
+df = df.sort_index()  # create sorted hierarchy # otherwise, slicing errors
+
+df.loc[('idx1', 'idx2'), 'clm3']
+df.loc['idx1']  # outermost index works like single-level index
+df.loc[(['idx1', 'idx1'], 'idx2'), :]
+
+# slicing both indexes including innermost index
+df.loc[(slice(None), slice('idx2','idx2')),:]
+
+# pivoting dataframes
+df.pivot(index='clm', columns='clm2', values='clm3')
+
+# stacking & unstacking
+df.unstack(level='gender')  #move to column
+df.unstack(level=1)
+df.stack(level='gender') #move to index
+
+# swapping innermost & outermost index
+swapped = df.swaplevel(0,1)
+swapped = swapped.sort_index()
+
+# melting dataframes
+pd.melt(df, id_vars=['clm'], value_vars=['clm', 'clm2'], var_name='clm', value_name='clm')
+
+# pivot table
+df.pivot_table(index='clm', columns='clm2', values='clm3', aggfunc='count') # aggregate
+signups_and_visitors_total = users.pivot_table(index='weekday', aggfunc=sum, margins=True) # margins=True for total by column
+
+# check if dataframes are the same
+df.equals(df2)  # returns boolean
+
+# group by 
+df.groupby('weekday')['bread'].count()
+
+by_year_region = gapminder.groupby(level=['Year', 'region'])
+
+df[clm] = df[clm].astype(categorical)  # saves memory & faster operations
+
+# multiple aggregations
+df.groupby('clm').[['clm2', 'clm3']].agg(['max', 'sum'])  #multiple aggregations
+df.groupby('clm').[['clm2', 'clm3']].agg({'bread':'max', 'butter': 'sum']) #dictionary
+
+# grouping & filtering
+chevy = df[clm].str.contains('chevrolet')  # boolean Series
+df.groupby(['yr', chevy])['mpg'].mean()
+
+# Create the Boolean Series: under10
+
+under10 = pd.Series(titanic['age'] < 10).map({True:'under 10', False:'over 10'}) #maps True/False to strings
+survived_mean_1 = titanic.groupby(under10)['survived'].mean()
+survived_mean_2 = titanic.groupby([under10, 'pclass'])['survived'].mean()
+
+
+# row label of maximum/minimum value
+df.idxmax()
+df.idxmin()
+df.idxmax(axis='columns')  # column label
+
+# transpose dataframe
+df.T
+
+# nunique()
+df.clm.nunique() # returns number of unique elements
+
+
+
+
+
+
+
+
+
+
+

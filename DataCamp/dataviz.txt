@@ -1,0 +1,142 @@
+# set axes manually
+plt.axes([x_low, y_low, width, height])  # between 0 and 1
+
+# set axes automatically
+plt.subplot(2,1,1)  # nrows, ncols, nsubplot
+..
+plt.subplot(2,1,2) 
+...
+plt.tight_layout() # no overlap
+plt.show()
+
+# customizing axes
+plt.axis([xmin, xmax, ymin, ymax])
+plt.xlim([xmin, xmax])
+plt.ylim([ymin, ymax])
+plt.axis('equal'/'tight'/..)
+
+# legend
+
+plt.plot(year, computer_science, color='red', label='Computer Science')
+
+plt.plot(year, physical_sciences, color='blue', label='Physical Sciences')
+
+
+plt.legend(loc='lower center')
+
+# annotations # text in figure # arrows
+plt.annotate('txt', xy=(), xytext, arrowprops{'color':'blue'})
+
+# style
+plt.style.use('ggplot')
+
+# meshgrid()
+u = np.linspace(-2,2,3)
+v = np.linspace(-1,1,5)
+X,Y = np.meshgrid(u,v)
+Z = X**2/25 + Y**2/4
+plt.set_cmap('gray')
+plt.pcolor(Z) #pseudocolor
+plt.show()
+
+plt.colorbar()
+plt.axis('tight')
+
+plt.contour(X,Y,Z,20) #contour
+plt.contourf(X,Y,Z,20) #filled contour
+
+# bivariate distributions
+plt.hist2d(x,y, bins=(10,20), range)
+plt.hexbin(x,y, gridsize=(15,10), extent)
+
+# image
+img = plt.imread('picture.jpg')
+img.shape
+plt.imshow(img)
+plt.axis('off')
+plt.show()
+
+# image reduction
+collapes = img.mean(axis=2)
+collapsed.shape
+plt.set_cmap('gray')
+plt.imshow(collapsed, cmap='gray')
+plt.axis('off')
+plt.show()
+
+uneven = collapsed[::4,::2]
+plt.imshow(uneven)
+
+# seaborn
+# statistical graphing
+import seaborn as sns
+tips  = sns.load_dataset('tips')
+sns.lmplot(x='', y'', data=tips, col='sex', hue='') #linear regression (incl 95% confidence interval)
+plt.show()
+
+sns.residplot() # linear regression residuals
+sns.regplot(x, y, data, color, order, scatter=None) # higher order regression
+
+# Plot linear regressions between 'weight' and 'hp' grouped row-wise by 'origin'
+sns.lmplot(x='weight', y='hp', data=auto, row='origin')
+
+# Strip plot, Swarm plot, Violin plot
+sns.stripplot(x='', y='', data=df) # strip lines
+sns.stripplot(x='', y='', data=df, size=4, jitter=True) # kind of swarmplot
+sns.swarmplot(x='', y='', data=df)
+sns.swarmplot(x='', y='', data=df, hue='sex', orient='h') # categories
+sns.violinplot(x='', y='', data=df)
+
+# Awesome combination of violinplot & swarmplot !!
+sns.violinplot(x='', y='', data=df, inner=None, color='lightgray')
+sns.stripplot(x='', y='', data=df, size=4, jitter=True)
+plt.ylabel('')
+plt.show()
+
+# Joint plot, pair plot, heat map
+sns.jointplot(x='', y='', data=df)
+sns.jointplot(x='', y='', data=df, kind='kde')
+sns.pairplot(df)
+sns.pairplot(df, hue='sex')
+sns.pairplot(auto, hue='origin', kind='reg') #including regression lines
+sns.heatmap(covariance)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

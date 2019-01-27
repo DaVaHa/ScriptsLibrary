@@ -1,0 +1,484 @@
+# sklearn
+import sklearn 
+
+## CONFUSION MATRIX ##
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+knn = KNeighborsClassifier(n_neighbors=8)
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.4, random_state=42)
+knn.fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+print(confusion_matrix(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+     Predict:   Spam mail    Real mail
+Actual:    -----------------------------	 
+Spam mail  |	True POS     False NEG 
+Real mail  |	False POS    True NEG
+
+(Type I error = False POS)
+(Type II error = False NEG)
+(p<0.05 => reject null hypothesis)
+
+# PRECISION/ACCURACY ##
+#(=True Positives / (True positives + false positives))
+#(=correct predictions/total predictions)
+#(=% of correct predictions // correctly predicted spam mails)
+
+# RECALL/SENSITIVITY ##
+#(= True Positives / (True positives + false negatives))
+#(=correct predictions/total relevant objects)
+#(=% of spam mails correctly predicted)
+
+## LOGISTIC REGRESSION ##
+(outputs probabilities)
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+logreg = LogisticRegression()
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.4,random_state=42)
+logreg.fit(X_train, y_train)
+y_pred = logreg.predict(X_test)
+
+## ROC CURVE ##
+(Receiver Operating Characteristic)
+from sklearn.metrics import roc_curve
+y_pred_prob = logreg.predict_proba(X_test)[:,1]
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
+plt.plot([0,1],[0,1], 'k--')
+plt.plot(fpr, tpr, label='Logistic Regression')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Logistic Regression ROC Curve')
+plt.show()
+
+## AREA UNDER CURVE (AUC)
+(if AUC > 0.5, then better than random guessing)
+from sklearn.metrics import roc_auc_score
+logreg = LogisticRegression()
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.4,random_state=42)
+logreg.fit(X_train, y_train)
+y_pred_prob = logreg.predict_proba(X_test)[:,1]
+roc_auc_score(y_test, y_pred_prob)
+
+# cross validation
+from sklearn.model_selection import cross_val_score
+cv_scores = cross_val_score(logreg, X, y, cv=5, scoring='roc_auc')
+print(cv_scores)
+
+## HYPERPARAMETER TUNING ##
+from sklearn.model_selection import GridSearchCV
+param_grid = {'n_neighbors' : np.arange(1,50)}
+knn = KNeighborsClassifier()
+knn_cv = GridSearchCV(knn, param_grid, cv=5)
+knn_cv.fit(X,y)
+knn_cv.best_params_
+knn_cv.best_score_
+
+#GridSearchCV (full grid search) vs RandomizedSearchCV (less-precise but faster grid search)
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.model_selection import GridSearchCV // RandomizedSearchCV
+ 
+# Setup the hyperparameter grid
+
+c_space = np.logspace(-5, 8, 15)
+
+param_grid = {'C': c_space}
+
+
+# Instantiate a logistic regression classifier: logreg
+
+logreg = LogisticRegression()
+
+
+# Instantiate the GridSearchCV object: logreg_cv
+
+logreg_cv = GridSearchCV(logreg, param_grid, cv=5) // RandomizedSearchCV(logreg, param_grid, cv=5)
+
+# Fit it to the data
+logreg_cv.fit(X,y)
+
+
+# Print the tuned parameters and score
+
+print("Tuned Logistic Regression Parameters: {}".format(logreg_cv.best_params_)) 
+
+print("Best score is {}".format(logreg_cv.best_score_))
+
+# split data into training & hold-out set at beginning
+# perform grid search cross-validation on training set
+# choose best hyperparameters and evaluate on hold-out set
+
+# HOLD-OUT SET
+# Import necessary modules
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.model_selection import GridSearchCV
+
+
+# Create the hyperparameter grid
+
+c_space = np.logspace(-5, 8, 15)
+
+param_grid = {'C':c_space , 'penalty': ['l1', 'l2']}
+
+
+# Instantiate the logistic regression classifier: logreg
+
+logreg = LogisticRegression()
+
+
+# Create train and test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=42)
+
+
+# Instantiate the GridSearchCV object: logreg_cv
+
+logreg_cv = GridSearchCV(logreg, param_grid, cv=5)
+
+
+# Fit it to the training data
+
+logreg_cv.fit(X_train, y_train)
+
+
+# Print the optimal parameters and best score
+
+print("Tuned Logistic Regression Parameter: {}".format(logreg_cv.best_params_))
+
+print("Tuned Logistic Regression Accuracy: {}".format(logreg_cv.best_score_))
+
+
+
+from sklearn.linear_model import ElasticNet
+
+from sklearn.metrics import mean_squared_error
+
+from sklearn.model_selection import GridSearchCV, train_test_split
+
+
+# Create train and test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.4, random_state=42)
+
+
+# Create the hyperparameter grid
+
+l1_space = np.linspace(0, 1, 30)
+
+param_grid = {'l1_ratio': l1_space}
+
+
+# Instantiate the ElasticNet regressor: elastic_net
+
+elastic_net = ElasticNet()
+
+
+# Setup the GridSearchCV object: gm_cv
+
+gm_cv = GridSearchCV(elastic_net, param_grid, cv=5)
+
+
+# Fit it to the training data
+
+gm_cv.fit(X_train, y_train)
+
+
+# Predict on the test set and compute metrics
+
+y_pred = gm_cv.predict(X_test)
+
+r2 = gm_cv.score(X_test, y_test)
+
+mse = mean_squared_error(y_test, y_pred)
+
+print("Tuned ElasticNet l1 ratio: {}".format(gm_cv.best_params_))
+
+print("Tuned ElasticNet R squared: {}".format(r2))
+
+print("Tuned ElasticNet MSE: {}".format(mse))
+
+
+## PREPROCESSING DATA ##
+# creating dummy variables from categorical features
+import pandas as pd
+df = pd.read_csv(csv)
+df_origin = pd.get_dummies(df, drop_first=True)  #creates seperate columns for each category 'clm_category'
+df_origin.head()
+df_origin = df_origin.drop('origin_Asia', axis=1) #one column too much, if 0 in others, logically first is 1
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Ridge
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.3, random_state=42)
+ridge = Ridge(alpha=0.5, normalize=True).fit(X_train,y_train)
+ridge.score(X_test, y_test)
+
+# boxplot
+df.boxplot(data_column, group_by_column, rotation)
+
+
+# RIDGE, CROSS VALIDATION, NORMALIZATION
+from sklearn.linear_model import Ridge
+
+from sklearn.model_selection import cross_val_score
+
+
+# Instantiate a ridge regressor: ridge
+
+ridge = Ridge(alpha=0.5, normalize=True)
+
+
+# Perform 5-fold cross-validation: ridge_cv
+
+ridge_cv = cross_val_score(ridge, X, y, cv=5)
+
+
+# Print the cross-validated scores
+
+print(ridge_cv)
+
+# IMPUTING/TRANSFORMING MISSING DATA
+df.clm.replace(0, np.nan, inplace=True)  # replace '0' integers with NaN value
+df.dropna()  #drops all rows with NULL value
+
+from sklearn.preprocessing import Imputer
+imp = Imputer(missing_values='NaN', strategy='mean', axis=0)  #axis=0 is column
+imp.fit(X)
+X = imp.transform(X)
+
+## PIPELINE ##
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import Imputer
+imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
+logreg = LogisticRegression()
+steps = [('imputation', imp), ('logistic_regression', logreg)]
+pipeline = Pipeline(steps)
+pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+pipeline.score(X_test, y_test)
+
+# Calculate NaN values per column
+print(df.isnull().sum())
+
+# SVC, IMPUTING, PIPELINE
+from sklearn.preprocessing import Imputer
+
+from sklearn.pipeline import Pipeline
+
+from sklearn.svm import SVC
+
+
+# Setup the pipeline steps: steps
+
+steps = [('imputation', Imputer(missing_values='NaN', strategy='most_frequent', axis=0)),
+('SVM', SVC())]
+
+
+# Create the pipeline: pipeline
+
+pipeline = Pipeline(steps)
+
+
+# Create training and test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=42)
+
+
+# Fit the pipeline to the train set
+
+pipeline.fit(X_train, y_train)
+
+
+# Predict the labels of the test set
+
+y_pred = pipeline.predict(X_test)
+
+
+# Compute metrics
+
+print(classification_report(y_test, y_pred))
+
+## NORMALIZATION/SCALING/STANDARDIZE ##
+from sklearn.preprocessing import scale
+X_scaled = scale(X)  # standardize
+np.mean(X), np.std(X)  # (8.1342 , 16.726)
+np.mean(X_scaled), np.std(X_scaled)  #(2.546 , 1.0)   
+
+from sklearn.preprocessing import StandardScaler
+steps = [ ('scaler', StandardScaler()) , ('knn', KNeighborsClassifier()) ]
+pipeline = Pipeline(steps)
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=42)
+
+knn_scaled = pipeline.fit(X_train, y_train)
+y_pred = pipeline.predict(X_test)
+accuracy_score(y_test, y_pred)  # 0.956
+knn_unscaled = KNeighborsClassifier().fit(X_train, y_train)
+knn_unscaled.score(X_test, y_test) # 0.928 (< standardized model!)
+
+# CROSS VALIDATION & PIPELINE
+steps = [ ('scaler', StandardScaler()) , ('knn', KNeighborsClassifier()) ]
+pipeline = Pipeline(steps)
+parameters = {knn__n_neighbors=np.arange(1,50)}
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state=21)
+cv = GridSearchCV(pipeline, param_grid=parameters)
+cv.fit(X_train, y_train)
+y_pred = cv.predict(X_test)
+print(cv.best_params_)
+print(cv.score(X_test, y_test))
+print(classification_report(y_test, y_pred))
+
+# STANDARDSCALER & PIPELINE
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.pipeline import Pipeline
+
+
+# Setup the pipeline steps: steps
+
+steps = [('scaler', StandardScaler()),
+        
+	('knn', KNeighborsClassifier())]
+        
+
+# Create the pipeline: pipeline
+
+pipeline = Pipeline(steps)
+
+
+# Create train and test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=42)
+
+
+# Fit the pipeline to the training set: knn_scaled
+
+knn_scaled = pipeline.fit(X_train, y_train)
+
+
+# Instantiate and fit a k-NN classifier to the unscaled data
+
+knn_unscaled = KNeighborsClassifier().fit(X_train, y_train)
+
+
+# Compute and print metrics
+
+print('Accuracy with Scaling: {}'.format(knn_scaled.score(X_test, y_test)))
+
+print('Accuracy without Scaling: {}'.format(knn_unscaled.score(X_test, y_test)))
+
+## CLASSIFICATION PIPELINE ##
+# Setup the pipeline
+
+steps = [('scaler', StandardScaler()),
+         
+	('SVM', SVC())]
+
+
+pipeline = Pipeline(steps)
+
+
+# Specify the hyperparameter space
+
+parameters = {'SVM__C':[1, 10, 100],
+                
+	'SVM__gamma':[0.1, 0.01]}
+
+
+# Create train and test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2, random_state=21)
+
+
+# Instantiate the GridSearchCV object: cv
+
+cv = GridSearchCV(pipeline, param_grid=parameters, cv=3)
+
+
+# Fit to the training set
+
+cv.fit(X_train, y_train)
+
+
+# Predict the labels of the test set: y_pred
+
+y_pred = cv.predict(X_test)
+
+
+# Compute and print metrics
+
+print("Accuracy: {}".format(cv.score(X_test, y_test)))
+
+print(classification_report(y_test, y_pred))
+
+print("Tuned Model Parameters: {}".format(cv.best_params_))
+
+## REGRESSION PIPELINE ##
+# Setup the pipeline steps: steps
+
+steps = [('imputation', Imputer(missing_values='NaN', strategy='mean', axis=0)),
+         
+	('scaler', StandardScaler()),
+         
+	('elasticnet', ElasticNet())]
+
+
+# Create the pipeline: pipeline 
+
+pipeline = Pipeline(steps)
+
+
+# Specify the hyperparameter space
+
+parameters = {'elasticnet__l1_ratio' : np.linspace(0,1,30)}
+
+
+# Create train and test sets
+
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.4,random_state=42)
+
+
+# Create the GridSearchCV object: gm_cv
+
+gm_cv = GridSearchCV(pipeline, param_grid=parameters, cv=3)
+
+
+# Fit to the training set
+
+gm_cv.fit(X_train, y_train)
+
+
+# Compute and print the metrics
+
+r2 = gm_cv.score(X_test, y_test)
+
+print("Tuned ElasticNet Alpha: {}".format(gm_cv.best_params_))
+
+print("Tuned ElasticNet R squared: {}".format(r2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

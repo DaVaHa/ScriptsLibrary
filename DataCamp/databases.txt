@@ -1,0 +1,26 @@
+# SQLAlchemy 
+
+from sqlalchemy import create_engine
+engine = create_engine('sqlite:///Northwind.sqlite')  #="connection string"; =type & name of database
+table_names = engine.table_names()  #table names
+
+# query data using SQLAlchemy
+import pandas as pd
+engine = create_engine('type:///db_name')
+con = engine.connect()
+rs = con.execute("select * from Orders")
+df = pd.DataFrame(rs.fetchall())
+df.columns = rs.keys()
+con.close()
+
+# context manager  # no need to close connection to db
+with engine.connect() as con:
+	rs = con.execute(query)
+	df = pd.DataFrame(rs.fetchmany(size=5))   #imports five rows 
+	df.columns = rs.keys()
+
+# querying with pandas
+df = pd.read_sql_query("SELECT * FROM Table", connection)
+
+
+

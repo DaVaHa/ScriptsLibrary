@@ -1,0 +1,7 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.set(color_codes=True)
+ax = sns.barplot( ['clinton', 'trump', 'sanders', 'cruz'], [clinton, trump, sanders, cruz] )  # labels & variables
+ax.set(ylabel="count")
+plt.show()

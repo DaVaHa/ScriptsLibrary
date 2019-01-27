@@ -1,0 +1,103 @@
+import numpy as np
+
+
+>>> height = [1.73,1.68,1.71,1.89,1.79]
+>>> weight = [65.4,59.2,63.6,88.4,68.7]
+>>> bmi_err = height / weight
+Traceback (most recent call last):
+  File "<pyshell#9>", line 1, in <module>
+    bmi_err = height / weight
+TypeError: unsupported operand type(s) for /: 'list' and 'list'
+
+>>> np_height = np.array(height)
+>>> np_height
+array([ 1.73,  1.68,  1.71,  1.89,  1.79])
+>>> np_weight = np.array(weight)
+>>> np_weight
+array([ 65.4,  59.2,  63.6,  88.4,  68.7])
+>>> bmi = np_weight / np_height ** 2
+>>> bmi
+array([ 21.85171573,  20.97505669,  21.75028214,  24.7473475 ,  21.44127836])
+>>> bmi > 22
+array([False, False, False,  True, False], dtype=bool)
+>>> bmi[bmi > 22]
+array([ 24.7473475])
+
+>>> np.round(np.random.normal(1.75, 0.20, 5000),2)
+array([ 1.48,  1.93,  1.88, ...,  1.32,  1.93,  1.75])
+
+# Print mean height (first column)
+avg = np.mean(np_baseball[:,0])
+print("Average: " + str(avg))
+
+# Print median height. Replace 'None'
+med = np.median(np_baseball[:,0])
+print("Median: " + str(med))
+
+# Print out the standard deviation on height. Replace 'None'
+stddev = np.std(np_baseball[:,0])
+print("Standard Deviation: " + str(stddev))
+
+# Print out correlation between first and second column. Replace 'None'
+corr = np.corrcoef(np_baseball[:,0],np_baseball[:,1])
+print("Correlation: " + str(corr))
+
+# random generators
+np.random.rand() #between 0 and 1
+np.random.randint(0,2) # 0 or 1
+np.random.seed(123)
+
+seed(): sets the random seed, so that your results are the reproducible between simulations. As an argument, it takes an integer of your choosing. If you call the function, no output will be generated.
+
+rand(): if you don't specify any arguments, it generates a random float between zero and one.
+
+# transpose 2D numpy array
+np_transposed = np.transpose(2d_array)
+
+# selecting last row of 2D array
+np_array[-1,:] #last row & all columns
+
+# importing data in numpy
+data = np.loadtxt('MNIST.txt', delimiter=',')
+#skiprows in case of header #usecols to select columns
+data = np.loadtxt('MNIST.txt', delimiter=',', skiprows=1, usecols=[0,2]) 
+# import all data as strings
+data = np.loadtxt('MNIST.txt', delimiter=',', dtype=str) 
+#numpy will figure out types of columns
+np.genfromtxt('file_name.csv', delimiter=',', names=True, dtype=None) 
+#default: dtype=None, names=True and delimiter=','
+np.recfromcsv(file_name)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

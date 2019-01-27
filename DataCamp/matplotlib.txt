@@ -1,0 +1,72 @@
+import matplotlib.pyplot as plt
+
+>>> x = [1950,1970,1990,2010]
+>>> y = [2.519,3.692,5.263,6.972]
+
+>>> plt.plot(x, y)
+>>> plt.show()
+
+>>> plt.scatter(x,y)
+>>> plt.show()
+
+#make x-axis in log
+plt.xscale('log')   
+
+# Show and clean up plot
+plt.show()
+plt.clf()
+
+# Add axis labels
+plt.xlabel(xlab)
+plt.ylabel(ylab)
+
+# Add title
+plt.title(title)
+
+# Adapt the ticks on the x-axis
+plt.xticks([1000,10000,100000], ['1k','10k','100k'])
+
+# size of bubbles (argument s)
+np_pop = np.array(pop) * 2
+plt.scatter(gdp_cap, life_exp, s = np_pop)
+
+# Specify c (color) and alpha (opacity)
+plt.scatter(gdp_cap, life_exp, s = np.array(pop) * 2, c = col , alpha = 0.8)
+
+# Additional customizations
+plt.text(1550, 71, 'India')
+plt.text(5700, 80, 'China')
+
+# Add grid() call
+plt.grid(True)
+
+#visualize
+df.column.plot('hist')
+df.boxplot(column='population', by='continent')
+df.plot(kind='scatter', x='clm_x_axis', y='clm_y_axis', rot=70)  #rot = rotate axis-labels
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
