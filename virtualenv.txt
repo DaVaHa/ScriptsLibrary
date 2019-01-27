@@ -1,0 +1,14 @@
+# create virtualenv
+virtualenv ENVIRONMENT_NAME 
+"virtualenv venv"
+python3 -m venv venv
+
+# activate virtualenv
+cd microblog
+source venv/bin/activate
+
+# deactivate virtualenv
+deactivate
+
+# removing virtualenv
+rm -r /path/to/ENV
