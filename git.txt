@@ -1,0 +1,193 @@
+GIT - VERSION CONTROL
+
+#######################
+
+https://github.com/DaVaHa/ScriptsLibrary.git
+DaVaHa
+pw
+
+#####   START NEW GIT REPO   #####
+Create new repo on github.com      					# create on github account 
+
+git init    								# initialize local git repo in working directory
+git pull https://github.com/DaVaHa/ScriptsLibrary.git   		# pull repo from github
+git remote add github https://github.com/DaVaHa/ScriptsLibrary.git  	# add github as master destination
+
+git add py_script   							# add new file to staging
+git commit -m "first commit"   						# commit to local git
+git push -u github master    						# push new version to github
+
+
+#####  ADD FILES TO GITHUB #####
+
+git add SummaryDB.db
+git add static/graphs/*
+git add static/bokeh/*
+
+git add templates/*
+git add webapp.py
+
+git commit -m "update yyyymmdd"
+
+git push github master
+
+#####  PUSH GITHUB TO PYTHON ANYWHERE #####
+
+(console PythonAnywhere)
+cd mysite/source/
+git pull
+
+
+#### DELETE FILES FROM GITHUB #####
+
+git rm file_name
+git commit -m "remove file_name"
+git push github master
+
+
+#### CREATE NEW REPO #####
+
+echo "# ESI" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add github https://github.com/DaVaHa/ESI.git
+git push -u github master
+
+
+########################
+########################
+
+ARCHITECTURE
+------------
+
+WORKING DIRECTORY => STAGING AREA => REPOSITORY
+
+
+BASIC WORKFLOW
+--------------
+
+- Initialize new repository: 
+git init
+
+- Check contents of working directory and staging area: 
+git status
+
+- Add file to staging area: 
+git add filename
+
+- Add multiple files to staging area: 
+git add filename1 filename2
+
+- See differences in files between working directory and staging area: 
+git diff filename  
+(press 'q' to exit diff mode)
+
+- Save changes from staging area to repository: 
+git commit -m "Completed commit to repo"
+
+- See log versions of previous commits: 
+git log
+
+
+BACKTRACKING
+------------
+
+- Display everything for head commit: 
+git show HEAD  (HEAD is the most recent commit)
+
+- Restore file in working directory to state before last commit : 
+git checkout HEAD filename
+
+- Unstage file changes in staging area: 
+git reset HEAD filename
+
+- Reset commit: 
+git reset commit_SHA  (commit_SHA = first 7 characters of previous commit)
+
+
+BRANCHING
+---------
+Master and Child repositories, with different versions
+
+- List all branches and display which branch you are on  (shown by "*")
+git branch
+
+- Create new branch
+git branch new_branch_name
+
+- Switch branch
+git checkout branch_name
+
+- Merging branche into master
+git merge branch_name
+
+- Delete branch
+git branch -d branch_name
+
+
+TEAMWORK
+--------
+
+=> Workflow for Git collaborations:
+1. Fetch and merge changes from the remote
+2. Create a branch to work on a new project feature
+3. Develop the feature on your branch and commit your work
+4. Fetch and merge from the remote again (in case new commits were made while you were working)
+5. Push your branch up to the remote for review
+
+"remote" = git repository that lives outside your local project folder
+
+
+- Create a local copy of a remote git repository
+git clone remote_location clone_name
+
+- Show remotes (origin = remote_location of source repository)
+git remote -v
+
+- Fetch new changes from origin
+git fetch
+
+- Merge origin master into local master branch
+git merge origin/master
+
+- Push changes to master for review
+git push origin your_branch_name
+
+- Pull updates from git  (=fetch & merge)
+git pull
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
