@@ -138,3 +138,15 @@ DECLARE @MyCursor CURSOR;
 
 	CLOSE db_cursor   
 	DEALLOCATE db_cursor
+	
+	
+- PIVOT 
+
+	SELECT CUSTOMER_WID, [2013] 'OmzetTotaal_13', [2014] 'OmzetTotaal_14', [2015] 'OmzetTotaal_15', [2016] 'OmzetTotaal_16', [2017] 'OmzetTotaal_17'
+	into #Totaal
+	FROM	(SELECT CUSTOMER_WID, Omzet_Totaal, FYEAR_WID
+			 FROM [JBC_BI_Sandbox].[dbo].[COF_CustomerRevenues]) p
+	PIVOT
+	(SUM(Omzet_Totaal)
+	FOR FYEAR_WID in([2013], [2014], [2015], [2016], [2017]) ) t
+
