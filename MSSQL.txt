@@ -1,0 +1,140 @@
+-- COLLATE DATABASE_DEFAULT
+
+-- RENAME COLUMN
+EXEC sp_rename 'MASTER.STORE_OPENING_CLOSING_DAYS.OPENING_DAY', 'STORE_OPENING_DAY';
+
+-- FLOAT WITH 2 DECIMALS
+cast( CALCULATION ) as numeric(36,2))
+
+- date to YYYYMMDD  (CHAR)
+CONVERT(VARCHAR(10), GETDATE() , 112)
+
+- YYYYMMDD (int) to PY YYYYMMDD int
+convert(int,CONVERT(VARCHAR(8),DATEADD(YEAR, -1, CONVERT(datetime, convert(varchar(8),COLUMN_NAME))),112)) /* +1 */
+
+DECLARE @date int;
+SET @date = 20120728    
+SELECT CONVERT(varchar(20), CONVERT(date, CONVERT(varchar(8), @date), 112),110)as datetime
+
+- DATEDIFF tussen twee datum
+select DATEDIFF(day, '20100801', '20101205')
+
+- CURRENT MONTH + 1
+select '201712', '201712'+'01',
+convert(datetime, '201712'+'01',112),
+dateadd(mm,1,convert(datetime, '201712'+'01',112)),
+convert(varchar,dateadd(mm,1,convert(datetime, '201712'+'01',112)),112),
+LEFT(convert(varchar,dateadd(mm,1,convert(datetime, '201712'+'01',112)),112),6)
+	
+	
+- SUBSTRING from character onwards (column, character, length of string)
+SUBSTRING(clm, CHARINDEX('\', clm) + 1, LEN(clm))
+
+- ALPHANUMERIC
+where column like '%[^0-9A-Za-z]%';
+
+-- FORWARD FILL
+	SELECT
+	[Time]
+	,COALESCE(Price, 
+		(SELECT TOP (1) Price 
+		FROM dbo.MyTable AS p2 
+		WHERE
+			p2.Price IS NOT NULL 
+			AND p2.[Time] <= p.[Time] ORDER BY p2.[Time] DESC))
+FROM dbo.MyTable AS p;
+
+- group by MONTH
+substring(convert(VARCHAR(10), TRANSDATE_WID),1,6) 
+
+-- Delete temp table
+IF OBJECT_ID('tempdb..#months') IS NOT NULL DROP TABLE #months
+
+
+-- RANK OVER PARTITION BY
+RANK() OVER   (PARTITION BY clm ORDER BY other_clm ) AS Rank 
+
+-- LOOP OVER TABLE
+DECLARE @MyCursor CURSOR;
+	DECLARE @StoreName varchar(100);
+	BEGIN
+		SET @MyCursor = CURSOR FOR
+		select STORENAME from #stores   -- looping over rows 
+
+		OPEN @MyCursor 
+		FETCH NEXT FROM @MyCursor 
+		INTO @StoreName
+
+		WHILE @@FETCH_STATUS = 0
+		BEGIN
+		  
+		  -- query
+		  
+		  
+		  -- end query
+		  
+		  FETCH NEXT FROM @MyCursor 
+		  INTO @StoreName 
+		END; 
+
+		CLOSE @MyCursor ;
+		DEALLOCATE @MyCursor;
+	END;
+	
+	
+-- LOOP OVER RANGE
+	DECLARE @cnt INT = 0;
+
+	WHILE @cnt < 10
+	BEGIN
+	   PRINT 'Inside simulated FOR LOOP on TechOnTheNet.com - ' + convert(varchar, @cnt) ;
+	   SET @cnt = @cnt + 1;
+	END;
+
+	PRINT 'Done simulated FOR LOOP on TechOnTheNet.com';
+	GO
+
+
+-- LOOPING OVER LIST
+
+	DECLARE @Years TABLE (Yr CHAR(2))
+	INSERT INTO @Years VALUES ('13')
+	INSERT INTO @Years VALUES ('14')
+	INSERT INTO @Years VALUES ('15')
+	INSERT INTO @Years VALUES ('16')
+	INSERT INTO @Years VALUES ('17')
+
+	DECLARE @Yr CHAR(2)
+
+	DECLARE db_cursor CURSOR FOR  
+	SELECT Yr FROM @Years
+	
+	OPEN db_cursor   
+	FETCH NEXT FROM db_cursor INTO @Yr   
+
+	WHILE @@FETCH_STATUS = 0   
+	BEGIN   
+	
+		-- CALCULATE GROUP A 
+       	declare @CalculateGroupA varchar(2000);
+		set @CalculateGroupA = 
+		'insert into #whatever
+		select '+ @Yr + ' Jaar,
+		SUM(CASE WHEN [Klant'+ @Yr + '] = ''Y'' THEN 1 ELSE 0 END) Klanten,
+		SUM([OmzetTotaal_'+ @Yr + ']) OmzetTotaal,
+		SUM([OmzetOnline_'+ @Yr + ']) OmzetOnline
+	    SUM([Kinderen]) Kinderen   
+      	from [JBC_BI_Sandbox].[dbo].[CustomerOverviewFull]
+		where CUSTOMER_WID in (select CUSTOMER_WID from #CustomersA)'
+		
+		declare @FinalQueryA varchar(4000);
+		set @FinalQueryA = @QueryCustA + @CalculateGroupA
+		exec(@FinalQueryA) 
+		
+		
+       FETCH NEXT FROM db_cursor INTO @Yr   
+       
+	END   
+
+	CLOSE db_cursor   
+	DEALLOCATE db_cursor
