@@ -150,3 +150,13 @@ DECLARE @MyCursor CURSOR;
 	(SUM(Omzet_Totaal)
 	FOR FYEAR_WID in([2013], [2014], [2015], [2016], [2017]) ) t
 
+	
+- IF ELSE PRINT
+
+declare @today varchar(8) = (select max(TRANSDATE_WID) from JBC_BI.FACT.Sales)
+--select @today
+IF @today != 20190129  
+    PRINT N'The current database is master.';  
+ELSE  
+    PRINT N'>> DAY =  ' + @today + ' >>';  
+GO 
