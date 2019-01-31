@@ -26,6 +26,15 @@ dateadd(mm,1,convert(datetime, '201712'+'01',112)),
 convert(varchar,dateadd(mm,1,convert(datetime, '201712'+'01',112)),112),
 LEFT(convert(varchar,dateadd(mm,1,convert(datetime, '201712'+'01',112)),112),6)
 	
+
+-- vorig jaar vs jaar daarvoor
+declare @datumtotP1 int = (select convert(varchar(8),dateadd(day,-1,getdate()),112));
+declare @datumvanP1 int = (select convert(varchar(8),dateadd(day,-365,getdate()),112));
+declare @datumtotP2 int = (select convert(varchar(8),dateadd(day,-365-1,getdate()),112));
+declare @datumvanP2 int = (select convert(varchar(8),dateadd(day,-365-365,getdate()),112));
+
+select 	@datumtotP1 'YESTERDAY', @datumvanP1 'TODAY_PY', @datumtotP2 'YESTERDAY_PY', @datumvanP2 'TODAY_2PY'
+
 	
 - SUBSTRING from character onwards (column, character, length of string)
 SUBSTRING(clm, CHARINDEX('\', clm) + 1, LEN(clm))

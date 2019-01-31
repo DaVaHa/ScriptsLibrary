@@ -8,5 +8,5 @@ PYTHON LIBRARY : shutil
 
 from shutil import copyfile
 
-#copy file
-copyfile(src, dst)
+#copy file  
+copyfile(src, dst)  #full path
