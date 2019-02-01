@@ -6,6 +6,9 @@ EXEC sp_rename 'MASTER.STORE_OPENING_CLOSING_DAYS.OPENING_DAY', 'STORE_OPENING_D
 -- FLOAT WITH 2 DECIMALS
 cast( CALCULATION ) as numeric(36,2))
 
+-- TODAY 
+GETDATE()
+
 - date to YYYYMMDD  (CHAR)
 CONVERT(VARCHAR(10), GETDATE() , 112)
 
@@ -169,3 +172,55 @@ IF @today != 20190129
 ELSE  
     PRINT N'>> DAY =  ' + @today + ' >>';  
 GO 
+
+
+	 
+-- DISTANCE IN KM BETWEEN TWO POINTS (LONGITUDE & LATITUDE)
+
+CASE WHEN CL_LAT != LAT and CL_LONG != LONG THEN
+
+ACOS(SIN(PI()*CL_LAT/180.0)*SIN(PI()*LAT/180.0)+COS(PI()*CL_LAT/180.0)*COS(PI()*LAT/180.0)*COS(PI()*LONG/180.0-PI()*CL_LONG/180.0))*6371 
+
+ELSE NULL END 'KlantKM'
+
+
+-- DROP TABLE
+exec('drop table JBC_BI_Sandbox.dbo.TABLE_NAME');
+
+-- DROP TEMP TABLE
+IF OBJECT_ID('tempdb..#today') IS NOT NULL DROP TABLE #today
+
+-- DROP COLUMN
+alter table scheme.subscheme.tabel
+drop column column_name;
+
+-- RENAME TABLE
+sp_rename 'schema.old_table_name', 'new_table_name'
+
+
+-- RENAME COLUMNS
+sp_rename 'TABLE_NAME.OLD_COLUMN_NAME', 'NEW_COLUMN_NAME', 'COLUMN';
+
+
+-- MODIFY COLUMN
+ALTER TABLE db_schema.table_name
+ALTER COLUMN column_name data_type;
+
+-- ADD NEW COLUMN
+ ALTER TABLE [JBC_BI_Master].[MASTER].[FIX_CUSTOMER]
+  ADD CUSTOMER_WID_NEW int;
+
+-- ADD CALCULATED COLUMN
+ALTER TABLE table_name
+ADD column_name 
+AS (
+CASE 
+WHEN column_1 = 0 THEN '1'
+WHEN column_1 = 1 THEN '0'
+ELSE NULL
+END
+);
+
+
+-- FLOAT WITH 2 DECIMALS
+cast( column_name ) as numeric(36,2))
