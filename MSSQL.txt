@@ -224,3 +224,31 @@ END
 
 -- FLOAT WITH 2 DECIMALS
 cast( column_name ) as numeric(36,2))
+
+-- SIZE DATABASE 
+SELECT 
+      database_name = DB_NAME(database_id)
+    , log_size_mb = CAST(SUM(CASE WHEN type_desc = 'LOG' THEN size END) * 8. / 1024 AS DECIMAL(8,2))
+    , row_size_mb = CAST(SUM(CASE WHEN type_desc = 'ROWS' THEN size END) * 8. / 1024 AS DECIMAL(8,2))
+    , total_size_mb = CAST(SUM(size) * 8. / 1024 AS DECIMAL(8,2))
+FROM sys.master_files WITH(NOWAIT)
+--WHERE database_id = DB_ID() -- for current db 
+GROUP BY database_id
+
+
+
+-- SEE LAST RUN TIME OF STORED PROCEDURE
+
+SELECT TOP 10 d.object_id, d.database_id, OBJECT_NAME(object_id, database_id) 'proc name',   
+    d.cached_time, d.last_execution_time, d.total_elapsed_time,  
+    d.total_elapsed_time/d.execution_count AS [avg_elapsed_time],  
+    d.last_elapsed_time, d.execution_count  
+FROM sys.dm_exec_procedure_stats AS d  
+
+where OBJECT_NAME(object_id, database_id)= 'PROC_DD_KlantenType_KPI'
+ORDER BY [total_worker_time] DESC;
+
+
+-- GET ALL STORED PROCEDURES FROM DATABASE
+
+select *  from JBC_BI.information_schema.routines;
