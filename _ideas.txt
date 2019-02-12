@@ -1,0 +1,5 @@
+IDEAS
+
+
+
+=> KLANTENTYPES : For updates : Use already existing INSERTED-DATE from table for inserts.
