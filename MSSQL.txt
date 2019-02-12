@@ -252,3 +252,7 @@ ORDER BY [total_worker_time] DESC;
 -- GET ALL STORED PROCEDURES FROM DATABASE
 
 select *  from JBC_BI.information_schema.routines;
+
+
+-- GENERATE GUID (HASH MD5)
+select CONVERT(VARCHAR(32), HashBytes('MD5', 'MASSEN311'+convert(varchar,GETDATE())), 2)
