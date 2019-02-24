@@ -17,7 +17,12 @@ from sklearn.datasets import load_boston, load_diabetes
 import statsmodels.api as sm
 
 
-def LinReg(X, Y, method='sklearn', test_size=0.2, plot=False):
+# Improvements : cross_validation, pandas_profiling, ..?
+
+
+
+# function
+def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
 
     ## Print objective
     print("\n### LINEAR REGRESSION ### ")
@@ -45,54 +50,55 @@ def LinReg(X, Y, method='sklearn', test_size=0.2, plot=False):
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=test_size)
 
     ### SKLEARN ###
-    if method == 'sklearn':
-        ## Create Linear Regression model
-        linreg = LinearRegression()
 
-        ## Train the model using training sets
-        print(">> Training model..")
-        linreg.fit(X_train, y_train)
+    ## Create Linear Regression model
+    linreg = LinearRegression()
 
-        ## Make predictions using test sets
-        print(">> Predicting on test data...")
-        y_pred = linreg.predict(X_test)
+    ## Train the model using training sets
+    print(">> Training model..")
+    linreg.fit(X_train, y_train)
 
-        ## Intercept & Coefficients
-        #print('Intercept: {}'.format(linreg.intercept_))
-        #print('Coefficients: \n', linreg.coef_)
+    ## Make predictions using test sets
+    print(">> Predicting on test data...")
+    y_pred = linreg.predict(X_test)
 
-        ## Print Intercept & Coefficients in Dataframe
-        intercept = pd.DataFrame(data=[linreg.intercept_], index=['Intercept'],columns=['Coefficient'])
-        #print(intercept)
-        if one_feature:
-            if isinstance(X, pd.DataFrame):
-                coeff_df = pd.DataFrame(linreg.coef_, index=[X.columns], columns=['Coefficient'])
-            else:    
-                coeff_df = pd.DataFrame(linreg.coef_, index=[X.name], columns=['Coefficient'])
-        else:
-            coeff_df = pd.DataFrame(linreg.coef_, X.columns, columns=['Coefficient'])
-        #print(coeff_df)
-        coefficients = pd.concat([intercept,coeff_df])
-        print('\n>> Coefficients : \n\n', coefficients)
+    ## Intercept & Coefficients
+    #print('Intercept: {}'.format(linreg.intercept_))
+    #print('Coefficients: \n', linreg.coef_)
 
-        ## The mean absolute error
-        print("\n>> Mean absolute error: %.2f" % mean_absolute_error(y_test, y_pred))
+    ## Print Intercept & Coefficients in Dataframe
+    intercept = pd.DataFrame(data=[linreg.intercept_], index=['Intercept'],columns=['Coefficient'])
+    #print(intercept)
+    if one_feature:
+        if isinstance(X, pd.DataFrame):
+            coeff_df = pd.DataFrame(linreg.coef_, index=[X.columns], columns=['Coefficient'])
+        else:    
+            coeff_df = pd.DataFrame(linreg.coef_, index=[X.name], columns=['Coefficient'])
+    else:
+        coeff_df = pd.DataFrame(linreg.coef_, X.columns, columns=['Coefficient'])
+    #print(coeff_df)
+    coefficients = pd.concat([intercept,coeff_df])
+    print('\n>> Coefficients : \n\n', coefficients)
 
-        ## The mean squared error
-        print(">> Mean squared error: %.2f" % mean_squared_error(y_test, y_pred))
+    ## The mean absolute error
+    print("\n>> Mean absolute error: %.2f" % mean_absolute_error(y_test, y_pred))
 
-        ## Determination coefficient R²  # = variance explained by model (1 = perfect)
-        print('>> Determination coefficient:  %.2f' % linreg.score(X_test, y_test))
+    ## The mean squared error
+    print(">> Mean squared error: %.2f" % mean_squared_error(y_test, y_pred))
 
-        ## Explained variance score: 1 is perfect prediction  (same as above)
-        #print('>> Variance score: %.2f' % r2_score(y_test, y_pred))
+    ## Determination coefficient R²  # = variance explained by model (1 = perfect)
+    print('>> Determination coefficient:  %.2f' % linreg.score(X_test, y_test))
+
+    ## Explained variance score: 1 is perfect prediction  (same as above)
+    #print('>> Variance score: %.2f' % r2_score(y_test, y_pred))
 
 
     ### STATSMODELS ###
+    
     #https://stackoverflow.com/questions/27928275/find-p-value-significance-in-scikit-learn-linearregression#42677750
-    else:
-        X2 = sm.add_constant(X)
-        est = sm.OLS(Y, X2)
+    if statsmodels:
+        X2 = sm.add_constant(X_train)
+        est = sm.OLS(y_train, X2)
         model = est.fit()
         print(model.summary())
 
@@ -103,8 +109,8 @@ def LinReg(X, Y, method='sklearn', test_size=0.2, plot=False):
         plt.plot(X_test, y_pred, color='blue', linewidth=2)
         plt.show()
 
-    if method == 'sklearn':
-        return coefficients
+
+    return coefficients
 
 
 
@@ -128,11 +134,11 @@ def Tests():
 
 def TestDatasets():
 
-    # boston
-
+    # bostont
     boston = load_boston()
-    X = pd.DataFrame(boston['data'])
-    Y = pd.Series(boston['target'])
+    print(boston.DESCR)
+    X = pd.DataFrame(boston['data'], columns=boston.feature_names)
+    Y = pd.Series(boston['target'], name='MEDIAN_VALUE')
     #print(X.head())
     #print(Y.head())
     #print(X.shape)
@@ -141,19 +147,20 @@ def TestDatasets():
 
     # diabetes
     diabetes = load_diabetes()
-    X = pd.DataFrame(diabetes['data'])
+    print(diabetes.DESCR)
+    X = pd.DataFrame(diabetes['data'], columns=diabetes.feature_names)
     Y = pd.Series(diabetes['target'])
     #print(X.head())
     #print(Y.head())
     #print(X.shape)
     #print(Y.shape)
+    LinReg(X,Y, statsmodels=False)
     LinReg(X,Y)
-    LinReg(X,Y, method='statsmodels')
     
 if __name__ == "__main__":
 
     
-    #Tests()
+    Tests()
 
     TestDatasets()
     
