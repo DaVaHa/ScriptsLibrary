@@ -2,16 +2,24 @@ IDEAS
 
 
 => Leeftijd voorspellen:
-- train scores ook in script steken
+
 - distributie sns.distplot van foutenmarge (pred - actuals) (script)
-- scores van 'stupid' model (=avg(y_test)) ter vergelijking (boolean in functie)
 - return full dataset : X, y_test, y_pred, avg
 - kopie file in folder zetten (experimenteren) & relevante wijzigingen in script zelf
 
-- leeftijd in maanden & 1 decimaal na komma
-- impact 3 of 2 jaar omzetten vs 1 jaar?
+- impact 3 of 2 jaar omzetten vs 1 jaar?Z
 - kinderen voorspeld als parameter?
 - flag online eerste aankoop 1/0
+
+
+- train scores ook in script steken : OK
+- scores van 'stupid' model (=avg(y_test)) ter vergelijking (boolean in functie) - OK.
+- excel bijhouden met dataset & scores - OK.
+- intercept eruit laten : OK.
+- query op tabel in DWH - OK.
+- beter op betere klanten?  Yes!
+- leeftijd in maanden & 1 decimaal na komma - OK.
+
 
 
 

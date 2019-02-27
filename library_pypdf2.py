@@ -37,7 +37,7 @@ pdfFile1.close() # close PDF files
 pdfFile2.close()
 
 # looping over all pages
-for pageNum in range(1, pdfReader.numPages):
+for pageNum in range(pdfReader.numPages):
     pageObj = pdfReader.getPage(pageNum)
     pdfWriter.addPage(pageObj)
 

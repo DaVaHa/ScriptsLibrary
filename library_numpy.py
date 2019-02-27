@@ -18,3 +18,9 @@ np.random.randint(low=0,high=10,size=10)  # = numpy.ndarray
 # mean = 0 & variance = 1
 np.random.randn() # = float
 np.random.randn(2,4) # = numpy.ndarray of shape (2,4)
+
+
+# statistics
+np.mean() # mean / average
+np.sqrt() # square root
+np.std() # standard deviation

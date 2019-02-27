@@ -1,0 +1,88 @@
+INTRODUCTION TO LINEAR MODELING IN PYTHON
+https://www.datacamp.com/courses/introduction-to-linear-modeling-in-python
+
+matplotlib, numpy, scipy, statsmodels, scikitlearn
+
+1. VISUALIZE LINEAR RELATIONSHIPS
+
+# models as descriptions
+y_range = np.max(y) - np.min(y) # 300 miles
+x_range = np.max(x) - np.min(x) # 6 hours
+mph = y_range / x_range # 50 mph
+def model(time):
+	return 50 * time
+	
+interpolation = model prediction for points within the range of data points
+extrapolation = model prediction for points outside the range of data points
+
+
+# visualize linear relationship
+import matplotlib.pyplot as plt
+plt.plot(x, y, 'r-o') # red, dash=solid line, round point markers
+plt.show()
+
+# figure
+fig, axis = plt.subplots()
+options = dict(marker='o', color='blue')
+line = axis.plot(x,y, **options)
+_ = axis.set_ylabel('Times')
+_ = axis.set_xlabel('Distances')
+plt.show()
+
+
+# Pass times and measured distances into model
+model_distances = model(times, measured_distances)
+# Create figure and axis objects and call axis.plot() twice to plot data and model distances versus times
+fig, axis = plt.subplots()
+axis.plot(times, measured_distances, linestyle=" ", marker="o", color="black", label="Measured")
+axis.plot(times, model_distances, linestyle="-", marker=None, color="red", label="Modeled")
+# Add grid lines and a legend to your plot, and then show to display
+axis.grid(True)
+axis.legend(loc="best")
+plt.show()
+
+
+mean = sum(x)/len(x)
+deviation = x - np.mean(x)
+variance = np.mean(deviation*deviation)
+standard deviation = np.sqrt(variance)
+
+# deviations of two variables
+dx = x - np.mean(x)
+dy = y - np.mean(y)
+deviation_products = dx*dy
+covariance = np.mean(dx*dy)  # average of product of variances
+# measures how two variables change together
+
+# divide deviations by standard deviation
+zx = dx/np.std(x)
+zy = dy/np.std(y)
+correlation = np.mean(zx*zy) # always within -1 and 1
+# = normalized covariance
+
+# NORMALIZATION = divide deviation from mean by standard deviation
+# results : mean = 0 & standard deviation = 1
+
+def correlation(x,y):
+    x_dev = x - np.mean(x)
+    y_dev = y - np.mean(y)
+    x_norm = x_dev / np.std(x)
+    y_norm = y_dev / np.std(y)
+    return np.mean(x_norm * y_norm)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -14,15 +14,16 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston, load_diabetes
+from sklearn.dummy import DummyRegressor
 import statsmodels.api as sm
-
+#import pandas_profiling
 
 # Improvements : cross_validation, pandas_profiling, ..?
 
 
 
 # function
-def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
+def LinReg(X, Y, intercept=True, test_size=0.2, statsmodels=True, dummy=True, plot=False):
 
     ## Print objective
     print("\n### LINEAR REGRESSION ### ")
@@ -31,6 +32,12 @@ def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
     print("\n>> X : \n", X.head().to_string(index=False))
     print("\n>> Y : \n", pd.DataFrame(Y).head().to_string(index=False))
     
+    print("\nRecords : ", len(Y))
+
+    ## Pandas Profiling 
+    #profile = pandas_profiling.ProfileReport(X.sample(frac=0.3))
+    #profile.to_file(outputfile=r"PandasProfiling.html")
+
     ## Split data & target into train & test sets
     print("\n>> Splitting data into Train & Test sets...")
 
@@ -52,7 +59,7 @@ def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
     ### SKLEARN ###
 
     ## Create Linear Regression model
-    linreg = LinearRegression()
+    linreg = LinearRegression(fit_intercept=intercept)
 
     ## Train the model using training sets
     print(">> Training model..")
@@ -60,7 +67,8 @@ def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
 
     ## Make predictions using test sets
     print(">> Predicting on test data...")
-    y_pred = linreg.predict(X_test)
+    y_test_pred = linreg.predict(X_test)
+    y_train_pred = linreg.predict(X_train)
 
     ## Intercept & Coefficients
     #print('Intercept: {}'.format(linreg.intercept_))
@@ -81,17 +89,35 @@ def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
     print('\n>> Coefficients : \n\n', coefficients)
 
     ## The mean absolute error
-    print("\n>> Mean absolute error: %.2f" % mean_absolute_error(y_test, y_pred))
+    print("\n>> Mean absolute error (TRAIN): %.2f" % mean_absolute_error(y_train, y_train_pred))
+    print(">> Mean absolute error (TEST):  %.2f" % mean_absolute_error(y_test, y_test_pred))
 
     ## The mean squared error
-    print(">> Mean squared error: %.2f" % mean_squared_error(y_test, y_pred))
+    print(">> Mean squared error (TRAIN): %.2f" % mean_squared_error(y_train, y_train_pred))
+    print(">> Mean squared error (TEST):  %.2f" % mean_squared_error(y_test, y_test_pred))
 
     ## Determination coefficient R²  # = variance explained by model (1 = perfect)
-    print('>> Determination coefficient:  %.2f' % linreg.score(X_test, y_test))
+    print('>> Determination coefficient (TRAIN):  %.2f' % linreg.score(X_train, y_train))
+    print('>> Determination coefficient (TEST):   %.2f' % linreg.score(X_test, y_test))
 
     ## Explained variance score: 1 is perfect prediction  (same as above)
-    #print('>> Variance score: %.2f' % r2_score(y_test, y_pred))
+    #print('>> Variance score: %.2f' % r2_score(y_test, y_test_pred))
 
+    # score op Dummy model (strategy=mean)
+    if dummy == True:
+        # Dummy model
+        dum = DummyRegressor(strategy="mean")
+        dum.fit(X_train, y_train)
+        y_pred_dummy = dum.predict(X_test)
+
+        ## The mean absolute error
+        print("\n>> Mean absolute error (DUMMY - TEST):  %.2f" % mean_absolute_error(y_test, y_pred_dummy))
+
+        ## The mean squared error
+        print(">> Mean squared error (DUMMY - TEST):  %.2f\n" % mean_squared_error(y_test, y_pred_dummy))
+
+        ## Determination coefficient R²  # = variance explained by model (1 = perfect)
+        #print('>> Determination coefficient (DUMMY - TEST):   %.2f\n' % dum.score(X_test, y_pred_dummy))
 
     ### STATSMODELS ###
     
@@ -106,9 +132,12 @@ def LinReg(X, Y, test_size=0.2, statsmodels=True, plot=False):
     # Plot data & line
     if plot and one_feature:  # one feature
         plt.scatter(X_test, y_test, color='black')
-        plt.plot(X_test, y_pred, color='blue', linewidth=2)
+        plt.plot(X_test, y_test_pred, color='blue', linewidth=2)
         plt.show()
 
+
+    # print examples of predicted vs real 
+    print(pd.DataFrame(data={'PREDICTED':y_test_pred, 'REALITY': y_test}).head(10))
 
     return coefficients
 

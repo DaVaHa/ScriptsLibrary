@@ -256,3 +256,23 @@ select *  from JBC_BI.information_schema.routines;
 
 -- GENERATE GUID (HASH MD5)
 select CONVERT(VARCHAR(32), HashBytes('MD5', 'MASSEN311'+convert(varchar,GETDATE())), 2)
+
+
+-- RUN STORED PROCEDURE ONLY ON WEEKDAYS
+
+	declare @weekday int;
+	set  @weekday = (	select WEEKDAY_NUMBER
+										from JBC_BI.DIM.Date
+										where DAY_WID = convert(varchar,getdate(),112)
+									)
+	-- select @weekday
+	IF  @weekday != 2 -- = NOT TUESDAY
+		BEGIN  
+			PRINT 'NOT A TUESDAY = NO UPDATE'
+			RETURN    -- = EXIT PROCEDURE
+		END  
+	ELSE  
+		BEGIN
+		  PRINT 'TUESDAY!'
+			select 'Daniel'
+		END
