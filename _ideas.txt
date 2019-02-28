@@ -7,10 +7,10 @@ IDEAS
 - return full dataset : X, y_test, y_pred, avg
 - kopie file in folder zetten (experimenteren) & relevante wijzigingen in script zelf
 
-- impact 3 of 2 jaar omzetten vs 1 jaar?Z
 - kinderen voorspeld als parameter?
-- flag online eerste aankoop 1/0
 
+
+- foutenmarge laten zien ifv omzet op grafiek
 
 - train scores ook in script steken : OK
 - scores van 'stupid' model (=avg(y_test)) ter vergelijking (boolean in functie) - OK.

@@ -35,3 +35,7 @@ for df in pd.read_csv(path +'data.csv', delimiter='|', chunksize=50000, error_ba
 # sample data from dataframe
 #https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html
 df.sample(frac=0.5)
+
+# correlation matrix
+import matplotlib.pyplot as plt
+plt.matshow(dataframe.corr())

@@ -23,7 +23,7 @@ import statsmodels.api as sm
 
 
 # function
-def LinReg(X, Y, intercept=True, test_size=0.2, statsmodels=True, dummy=True, plot=False):
+def LinReg(X, Y, intercept=True, test_size=0.2, correlation=True, statsmodels=True, dummy=True, plot=False):
 
     ## Print objective
     print("\n### LINEAR REGRESSION ### ")
@@ -37,6 +37,15 @@ def LinReg(X, Y, intercept=True, test_size=0.2, statsmodels=True, dummy=True, pl
     ## Pandas Profiling 
     #profile = pandas_profiling.ProfileReport(X.sample(frac=0.3))
     #profile.to_file(outputfile=r"PandasProfiling.html")
+
+    # Correlation matrix
+    if correlation == True:
+        #print(X.corr())
+        df = X
+        df['TARGET'] = Y
+        df.corr().to_excel('CorrelationMatrix.xlsx')
+        #plt.matshow(X.corr())
+        #plt.show()
 
     ## Split data & target into train & test sets
     print("\n>> Splitting data into Train & Test sets...")
@@ -90,15 +99,15 @@ def LinReg(X, Y, intercept=True, test_size=0.2, statsmodels=True, dummy=True, pl
 
     ## The mean absolute error
     print("\n>> Mean absolute error (TRAIN): %.2f" % mean_absolute_error(y_train, y_train_pred))
-    print(">> Mean absolute error (TEST):  %.2f" % mean_absolute_error(y_test, y_test_pred))
+    print(">> Mean absolute error (TEST):  %.2f\n" % mean_absolute_error(y_test, y_test_pred))
 
     ## The mean squared error
     print(">> Mean squared error (TRAIN): %.2f" % mean_squared_error(y_train, y_train_pred))
-    print(">> Mean squared error (TEST):  %.2f" % mean_squared_error(y_test, y_test_pred))
+    print(">> Mean squared error (TEST):  %.2f\n" % mean_squared_error(y_test, y_test_pred))
 
     ## Determination coefficient R²  # = variance explained by model (1 = perfect)
     print('>> Determination coefficient (TRAIN):  %.2f' % linreg.score(X_train, y_train))
-    print('>> Determination coefficient (TEST):   %.2f' % linreg.score(X_test, y_test))
+    print('>> Determination coefficient (TEST):   %.2f\n' % linreg.score(X_test, y_test))
 
     ## Explained variance score: 1 is perfect prediction  (same as above)
     #print('>> Variance score: %.2f' % r2_score(y_test, y_test_pred))
