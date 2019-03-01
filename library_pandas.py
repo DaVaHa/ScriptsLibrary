@@ -39,3 +39,8 @@ df.sample(frac=0.5)
 # correlation matrix
 import matplotlib.pyplot as plt
 plt.matshow(dataframe.corr())
+
+
+# copy dataframe
+# https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.copy.html
+df_copy = df.copy() # (!) NOT df_copy = df (!) -> Changes to the original will be reflected in the shallow copy (and vice versa) (!)

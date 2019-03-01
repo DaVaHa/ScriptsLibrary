@@ -17,6 +17,7 @@ from sklearn.datasets import load_boston, load_diabetes
 from sklearn.dummy import DummyRegressor
 import statsmodels.api as sm
 #import pandas_profiling
+import seaborn as sns
 
 # Improvements : cross_validation, pandas_profiling, ..?
 
@@ -41,11 +42,12 @@ def LinReg(X, Y, intercept=True, test_size=0.2, correlation=True, statsmodels=Tr
     # Correlation matrix
     if correlation == True:
         #print(X.corr())
-        df = X
+        df = X.copy()
         df['TARGET'] = Y
         df.corr().to_excel('CorrelationMatrix.xlsx')
         #plt.matshow(X.corr())
-        #plt.show()
+        sns.heatmap(df.corr(), annot=True, fmt=".2f")
+        plt.show()
 
     ## Split data & target into train & test sets
     print("\n>> Splitting data into Train & Test sets...")

@@ -13,3 +13,8 @@ import numpy as np
 x = np.random.randint(0,10,1000)
 sns.distplot(x)
 plt.show()
+
+
+# correlation matrix
+# https://seaborn.pydata.org/generated/seaborn.heatmap.html
+sns.heatmap(flights, annot=True, fmt="d")

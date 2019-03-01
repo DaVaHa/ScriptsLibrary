@@ -162,7 +162,17 @@ DECLARE @MyCursor CURSOR;
 	(SUM(Omzet_Totaal)
 	FOR FYEAR_WID in([2013], [2014], [2015], [2016], [2017]) ) t
 
-	
+
+-- CREATE PIVOT PARAMETERS WITH PYTHON
+text = """param1
+param2
+...
+"""
+for t in text.split('\n'):
+	#print("isnull([{0}],0) as '{0}',".format(t.replace("'","")))
+	print("[{}],".format(t.replace("'","")), end='')
+
+
 - IF ELSE PRINT
 
 declare @today varchar(8) = (select max(TRANSDATE_WID) from JBC_BI.FACT.Sales)
