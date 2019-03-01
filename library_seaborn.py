@@ -18,3 +18,4 @@ plt.show()
 # correlation matrix
 # https://seaborn.pydata.org/generated/seaborn.heatmap.html
 sns.heatmap(flights, annot=True, fmt="d")
+plt.show()

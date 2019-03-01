@@ -67,6 +67,7 @@ def LinReg(X, Y, intercept=True, test_size=0.2, correlation=True, statsmodels=Tr
     else: # more than one feature
         X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=test_size)
 
+
     ### SKLEARN ###
 
     ## Create Linear Regression model
