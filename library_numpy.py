@@ -24,3 +24,7 @@ np.random.randn(2,4) # = numpy.ndarray of shape (2,4)
 np.mean() # mean / average
 np.sqrt() # square root
 np.std() # standard deviation
+
+# load data from text file
+#https://docs.scipy.org/doc/numpy/reference/generated/numpy.genfromtxt.html
+np.genfromtxt(fname, dtype, delimiter, ...)

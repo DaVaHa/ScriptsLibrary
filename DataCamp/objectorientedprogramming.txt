@@ -1,0 +1,110 @@
+Object oriented programming
+https://www.datacamp.com/courses/object-oriented-programming-in-python
+
+---------------------------
+
+OOP:
+- way to build flexible & reproducible code
+- developing building blocks to develop more advanced modules & libraries
+
+axis 0 = row
+axis 1 = column
+
+np.array(matrix, dtype = float)  # list-like object with single data type
+
+class = reusable chunk of code that has methods & variables
+
+IMPERATIVE PROGRAMMING : variables & functions
+OBJECT ORIENTED PROGRAMMING : attributes/fields & methods
+
+A class is a template for an object. (Class as cookiecutter, object is cookie itself)
+Objects are instances of classes.
+
+
+example:
+"""
+class DataShell:
+
+    #constructor
+    def __init__(self, filename):
+        self.filename = filename  # attribute
+
+    # method
+    def create_datashell(self):
+        self.array = np.genfromtxt(self.filename, delimiter=',', dtype=None)
+        return self.array
+    
+    # method
+    def rename_column(self, old_colname, new_colname):
+        for index, value in enumerate(self.array[0]):
+            if value == old_colname.encode('UTF-8'):
+                self.array[0][index] = new_colname
+        return self.array
+
+    def show_shell(self):
+        print(self.array)
+
+    def five_figure_summary(self, col_pos):
+        statistics =  stats.describe(self.array[1:,col_pos].astype(np.float))
+        return f"Five-figure stats of column {col_position}: {statistics}"
+"""
+
+
+Initialize a class
+
+#Empty Constructor
+"""
+class Dinosaur:
+    def __init__(self):
+        pass
+"""
+
+#Constructor with Attributes
+"""
+class Dinosaur:
+    def __init__(self):
+        self.tail = 'Yes'   
+"""
+
+__init__ is an initialization method used to construct class instances in custom ways.
+
+Class instances are useful in that we can store values in them at the time of instantiation. 
+We store these values in instance variables. This means that we can have many instances of 
+the same class whose instance variables hold different values!
+
+Instance variables are declared with __init__ method (at time of instantiation),
+class variables are declared/specified at the class definition phase.
+"""
+class DataShell:
+
+    # class variable 
+    family = "DataShell"
+
+    def __init__(self, identifier):
+        # instance variable
+        self.identifier = identifier  
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

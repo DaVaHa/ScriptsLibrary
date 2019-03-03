@@ -1,5 +1,9 @@
 IDEAS
 
+- print neighbours
+- doc strings for functions
+- lin reg op recuperatie data
+
 
 => Leeftijd voorspellen:
 
