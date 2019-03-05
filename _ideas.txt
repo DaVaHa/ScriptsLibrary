@@ -1,5 +1,7 @@
 IDEAS
 
+- communie collectie evolutie over jaren heen?
+
 - print neighbours
 - doc strings for functions
 - lin reg op recuperatie data
