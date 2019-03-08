@@ -1,33 +1,36 @@
 '''
 
-K Nearest Neighbors : Regression 
+Support Vector Machines : Regression
 
-https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html
-https://www.analyticsvidhya.com/blog/2018/08/k-nearest-neighbor-introduction-regression-python/
-
+https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html
+https://scikit-learn.org/stable/auto_examples/svm/plot_svm_regression.html#sphx-glr-auto-examples-svm-plot-svm-regression-py
 '''
 
+
 import numpy as np
-import pandas as pd
+from sklearn.svm import SVR
 import matplotlib.pyplot as plt
-#from sklearn.linear_model import LinearRegression
-from sklearn.neighbors import KNeighborsRegressor
+import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_boston, load_diabetes
 from sklearn.dummy import DummyRegressor
-import statsmodels.api as sm
-#import pandas_profiling
-#import seaborn as sns
+import seaborn as sns
 
 
+"""
+Kernels:  ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’ 
+"""
 
-def KNN_Regression(X, Y, neighbors=10, test_size=0.2):
+
+def SVM_Regression(X, Y, test_size=0.2, kernel='rbf', C=1.0, epsilon=0.1):
     
     ## Print objective
-    print("\n### KNN REGRESSION ### ")
-    print("\n>> Neighbors : {}".format(neighbors))
-        
+    print("\n### SVM REGRESSION ### ")
+    print("\n>> Kernel : {}".format(kernel))
+    print(">> C : {}".format(C))
+    print(">> Epsilon : {}".format(epsilon))
+
     ## Print example data
     #print("\n>> X : \n", X.head().to_string(index=False))
     #print("\n>> Y : \n", pd.DataFrame(Y).head().to_string(index=False))
@@ -55,17 +58,17 @@ def KNN_Regression(X, Y, neighbors=10, test_size=0.2):
 
     ### SKLEARN ###
 
-    ## Create KNN Regression model
-    neigh = KNeighborsRegressor(n_neighbors=neighbors)
+    ## Create SVM Regression model
+    svr = SVR(kernel=kernel, C=C, epsilon=epsilon)
 
     ## Train the model using training sets
     print(">> Training model..")
-    neigh.fit(X_train, y_train)
+    svr.fit(X_train, y_train)
 
     ## Make predictions using test sets
     print(">> Predicting on test data...")
-    y_test_pred = neigh.predict(X_test)
-    y_train_pred = neigh.predict(X_train)
+    y_test_pred = svr.predict(X_test)
+    y_train_pred = svr.predict(X_train)
 
     ## The mean absolute error
     print("\n>> Mean absolute error (TRAIN): %.2f" % mean_absolute_error(y_train, y_train_pred))
@@ -76,15 +79,15 @@ def KNN_Regression(X, Y, neighbors=10, test_size=0.2):
     print(">> Mean squared error (TEST):  %.2f\n" % mean_squared_error(y_test, y_test_pred))
 
     ## Determination coefficient R²  # = variance explained by model (1 = perfect)
-    print('>> Determination coefficient (TRAIN):  %.2f' % neigh.score(X_train, y_train))
-    print('>> Determination coefficient (TEST):   %.2f\n' % neigh.score(X_test, y_test))
+    print('>> Determination coefficient (TRAIN):  %.2f' % svr.score(X_train, y_train))
+    print('>> Determination coefficient (TEST):   %.2f\n' % svr.score(X_test, y_test))
 
     # returns MAE & MSE
-    return mean_absolute_error(y_test, y_test_pred) , mean_squared_error(y_test, y_test_pred)
+    #return mean_absolute_error(y_test, y_test_pred) , mean_squared_error(y_test, y_test_pred)
 
 
 
-
+# ‘linear’, ‘poly’, ‘rbf’, ‘sigmoid’, ‘precomputed’ 
 def Tests():
 
     # Get data 
@@ -98,9 +101,9 @@ def Tests():
     #print(data.head())
 
     # Tests
-    x = KNN_Regression(data[['Weight','BMI']], data['Height'],test_size=0.3,) # two features
-    y = KNN_Regression(data['Weight'], data['Height'],test_size=0.3) # one feature = series
-    z = KNN_Regression(data[['Weight']], data['Height'],test_size=0.3) # one feature = df
+    x = SVM_Regression(data[['Weight','BMI']], data['Height'],test_size=0.3,kernel='linear') # two features
+    y = SVM_Regression(data['Weight'], data['Height'],test_size=0.3) # one feature = series
+    z = SVM_Regression(data[['Weight']], data['Height'],test_size=0.3,kernel='poly') # one feature = df
 
 
 def TestDatasets():
@@ -114,7 +117,7 @@ def TestDatasets():
     #print(Y.head())
     #print(X.shape)
     #print(Y.shape)
-    KNN_Regression(X,Y)
+    SVM_Regression(X,Y,kernel='sigmoid')
 
     # diabetes
     diabetes = load_diabetes()
@@ -125,8 +128,8 @@ def TestDatasets():
     #print(Y.head())
     #print(X.shape)
     #print(Y.shape)
-    KNN_Regression(X,Y)
-    KNN_Regression(X,Y)
+    SVM_Regression(X,Y)
+    SVM_Regression(X,Y)
     
 if __name__ == "__main__":
 

@@ -38,6 +38,8 @@ declare @datumvanP2 int = (select convert(varchar(8),dateadd(day,-365-365,getdat
 
 select 	@datumtotP1 'YESTERDAY', @datumvanP1 'TODAY_PY', @datumtotP2 'YESTERDAY_PY', @datumvanP2 'TODAY_2PY'
 
+-- vorig jaar
+convert(varchar,dateadd(year,-1,getdate()),112) 
 	
 - SUBSTRING from character onwards (column, character, length of string)
 SUBSTRING(clm, CHARINDEX('\', clm) + 1, LEN(clm))

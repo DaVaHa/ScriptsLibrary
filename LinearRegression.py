@@ -22,7 +22,6 @@ import seaborn as sns
 # Improvements : cross_validation, pandas_profiling, ..?
 
 
-
 # function
 def LinReg(X, Y, intercept=True, test_size=0.2, correlation=True, statsmodels=True, dummy=True, plot=False):
 
