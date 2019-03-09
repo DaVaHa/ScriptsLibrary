@@ -1,0 +1,128 @@
+AWS - What is Machine Learning
+
+
+ML = subset of AI
+
+Uses historical data to predict future outcomes
+
+- make predictions
+- optimize utility functions
+- extract hidden data structures
+- classify data
+
+Fraud detection
+1. mine data
+2. identify pattern and create labels
+3. train model
+4. flag transaction as fraudulent
+
+Content Personalization
+- Use predictive analytics models to recommend items
+
+Targeted Marketing
+- Use prior customer activity to choose the most relevant email campaigns for target customers
+
+Categorization (automated)
+- Unstructured content -> Machine Learning model -> Categorized documents
+
+Customer service
+- Analyze social media traffic to route customers to customer care specialists
+
+
+MACHINE LEARNING CONCEPTS
+
+Methods & systems that:
+Predict
+Extract
+Summarize
+Optimize
+Adapt
+
+Machine Learning types: 
+- Unsupervised
+- Supervised : Classification & Regression
+- Reinforcement
+
+
+SUPERVISED 
+
+Teaches the model by providing a dataset with example inputs and outputs
+Human teacher's expertise is used to tell the model which outputs are correct
+Input -> Model -> Output/Prediction
+Further grouped into classification and regression
+
+Classification : predicted value = category of true/false
+Regression : predicted value = number
+
+
+UNSUPERVISED
+
+No external teacher or pre-trained data
+Model detects emerging properties in the input dataset
+Model then constructs patterns or clusters
+Further grouped into clustering and association
+
+
+REINFORCEMENT
+Software agent who takes action based on input and based on result of action determines next action to take.
+Reward feedback serves as input to learn from its behaviour.
+Maximises reward in the long run.
+
+
+Applications : 
+- Based on what you know about the user : Will they use your product?
+- Based on what you know about an order : Is this order fraudulent?
+- Based on what you know about a news article : What other articles are interesting?
+
+
+Challenges to Building Smart Applications
+- Expertise
+- Scaling
+- Time to Operationalize
+
+
+Amazon Machine Learning -> For developers & data scientist who want to focus on building models
+Apache Spark on Amazon EMR -> To create managed Apache Spark clusters from the AWS Management Console, AWS CLI or the Amazon EMR API
+
+
+Binary classification : Predicts the answer to a Yes/No question (Is this email spam or not?)
+Multiclass classification : Predicts the correct category from a list (What kind of movie is this?)
+Regression : Predicts the value of a numeric variable (How many units will be sold?)
+
+1. Train model
+2. Evaluate and optimize
+3. Retrieve predictions
+
+
+CASE STUDY - ZILLOW
+
+Challenges:
+- provide timely home valuations for all new homes
+- perform machine-learning jobs in hours instead of a day
+- scale storage and compute capacity on demand
+
+Solution:
+- runs Zestimate, Zillow's machine learning-based home-valuation tool on AWS
+- gives customes more accurate data on more than 100 million homes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
