@@ -66,6 +66,7 @@ class Dinosaur:
         self.tail = 'Yes'   
 """
 
+
 __init__ is an initialization method used to construct class instances in custom ways.
 
 Class instances are useful in that we can store values in them at the time of instantiation. 
@@ -74,6 +75,9 @@ the same class whose instance variables hold different values!
 
 Instance variables are declared with __init__ method (at time of instantiation),
 class variables are declared/specified at the class definition phase.
+
+
+
 """
 class DataShell:
 
@@ -84,6 +88,130 @@ class DataShell:
         # instance variable
         self.identifier = identifier  
 """
+
+
+"""
+# Create class DataShell
+class DataShell:
+
+    # Define initialization method
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.data_as_csv = pd.read_csv(filepath)
+
+    # Define method rename_column, with arguments self, column_name, and new_column_name
+    def rename_column(self, column_name, new_column_name):
+        self.data_as_csv.columns = self.data_as_csv.columns.str.replace(column_name, new_column_name)
+        
+    # Define get_stats method, with argument self
+    def get_stats(self):
+        # Return a description data_as_csv
+        return self.data_as_csv.describe()
+
+# Instantiate DataShell as us_data_shell
+us_data_shell = DataShell(us_life_expectancy)
+
+# Print the output of your objects get_stats method
+print(us_data_shell.get_stats())
+"""
+
+
+Best practices Python (PEP 8):
+
+Class names in CamelCase
+max length of line of code : 79 characters
+spaces (not tabs) for indentation
+use of docstrings
+
+
+Inheritance & Polymorphism & Composition
+
+Inheritance for re-usability!
+Inheritance allows us to pass features down into a child class
+Is-a & Has-a relationship
+
+Polymorphism : if two classes inherit from the same parent class, they are "polymorphic" 
+(= similar because of parent class, but different because of own methods and/or attributes)
+
+
+Composition :  mix of classes
+
+
+
+"""
+# Create a class Vertebrate
+class Vertebrate:
+    spinal_cord = True
+    def __init__(self, name):
+        self.name = name                             
+
+# Create a class Mammal, which inherits from Vertebrate
+class Mammal(Vertebrate):
+    def __init__(self, name, animal_type):
+        self.animal_type = animal_type
+        self.temperature_regulation = True
+
+# Create a class Reptile, which also inherits from Vertebrate
+class Reptile(Vertebrate):
+    def __init__(self, name, animal_type):
+        self.animal_type = animal_type
+        self.temperature_regulation = False
+
+# Instantiate a mammal with name 'Daisy' and animal_type 'dog': daisy
+daisy = Mammal('Daisy', 'dog')
+
+# Instantiate a reptile with name 'Stella' and animal_type 'alligator': stella
+stella = Reptile('Stella', 'alligator')
+
+# Print stella's attributes spinal_cord and temperature_regulation
+print("Stella Spinal cord: " + str(stella.spinal_cord))
+print("Stella temperature regularization: " + str(stella.temperature_regulation))
+
+# Print daisy's attributes spinal_cord and temperature_regulation
+print("Daisy Spinal cord: " + str(daisy.spinal_cord))
+print("Daisy temperature regularization: " + str(daisy.temperature_regulation))
+"""
+
+
+"""
+class DataShell:
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    def create_datashell(self):
+        data_array = np.genfromtxt(self.filename, delimiter=',', dtype=None)
+        self.array = data_array
+        return self.array
+
+    def show_shell(self):
+        print(self.array)
+
+    def rename_column(self, old_colname, new_colname):
+        for index, value in enumerate(self.array[0]):
+            if value == old_colname.encode('UTF-8'):
+                self.array[0][index] = new_colname
+        return self.array
+
+    def five_figure_summary(self,col_position):
+        statistics =  stats.describe(self.array[1:,col_position].astype(np.float))
+        return f"Five-figure stats of column {col_position}: {statistics}"
+"""
+
+
+
+
+
+How to get better at OOP
+- read well-documented codebases
+- write your own classes
+- don't get discouraged!
+
+
+
+
+
+
 
 
 
