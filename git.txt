@@ -55,7 +55,7 @@ git remote add github https://github.com/DaVaHa/ESI.git
 git push -u github master
 
 
-#### DELETE REPO #####
+#### DELETE / REMOVE REPO #####
 rm -rf .git
 
 ########################
