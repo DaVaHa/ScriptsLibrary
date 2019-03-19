@@ -1,0 +1,169 @@
+Intermediate SQL Server
+-----------------------
+
+Functions:
+
+min 
+max
+avg
+count
+
+dateadd
+datediff
+
+case when then else end
+
+round
+truncate = round with third parameter non zero (fe ROUND(Cost,0,1))
+
+abs
+log
+square
+sqrt
+
+
+TRANSACT-SQL
+------------
+
+declare @variablename datatype
+set @variablename = 
+
+VARCHAR : variable length text field
+INT : -2147483647 to 2147483647
+DECIMAL = NUMERIC
+
+
+WHILE LOOPS
+
+BEGIN 
+END
+BREAK will cause an exit out of the loop
+CONTINUE will cause the loop to continue
+
+"""
+-- Declare ctr as an integer
+DECLARE @ctr INT
+-- Assign 1 to ctr
+SET @ctr = 1
+-- Specify the condition of the WHILE loop
+WHILE @ctr < 10
+    -- Begin the code to execute inside WHILE loop
+    BEGIN
+       -- Keep incrementing the value of @ctr
+       SET @ctr = @ctr + 1
+
+       -- Check if ctr is equal to 4
+       IF @ctr = 4
+           -- When ctr is equal to 4, the loop will break
+           BREAK
+       -- End WHILE loop
+    END
+-- View the value after the loop
+SELECT @ctr
+"""
+
+
+COMMON TABLE EXPRESSIONS
+
+
+-- Create a CTE to get the Maximum BloodPressure by Age
+WITH BloodPressureAge(Age, MaxBloodPressure)
+AS 
+(SELECT Age, MAX(BloodPressure) AS MaxBloodPressure
+ FROM Kidney
+ GROUP BY Age)
+
+-- Create a query to use the CTE as a table
+SELECT a.Age, MIN(a.BloodPressure), b.MaxBloodPressure
+FROM Kidney a
+-- Join the CTE with the table  
+JOIN BloodpressureAge b
+     ON a.Age = b.Age
+GROUP BY a.Age, b.MaxBloodPressure
+
+
+
+WINDOW FUNCTIONS
+
+
+"""
+SELECT 
+SalesPerson, 
+SalesYear, 
+CurrentQuota,   
+SUM(CurrentQuota) OVER (PARTITION BY SalesYear) AS YearlyTotal, 
+FROM SaleGoal 
+"""
+
+
+first_value()
+last_value()
+
+"""
+-- Select the columns
+SELECT SalesPerson, SalesYear, CurrentQuota, 
+  -- First value from every window
+     FIRST_VALUE(CurrentQuota) 
+     OVER (PARTITION BY SalesYear ORDER BY ModifiedDate) AS StartQuota, 
+  -- Last value from every window 
+     LAST_VALUE(CurrentQuota) 
+     OVER (PARTITION BY SalesYear ORDER BY ModifiedDate) AS EndQuota, 
+     ModifiedDate as ModDate
+FROM SaleGoal
+"""
+
+
+lead() : value of next row
+lag() : value of previous row
+
+"""
+SELECT SalesPerson, SalesYear, CurrentQuota, 
+-- Create a window function to get the values from the next row
+       LEAD(CurrentQuota) 
+       OVER (PARTITION BY SalesYear ORDER BY ModifiedDate) AS NextQuota, 
+       ModifiedDate AS ModDate
+FROM SaleGoal
+"""
+
+
+row_number()
+
+stdev()
+
+
+
+mode = value which appear the most in your data
+
+"""
+--Calculating the mode in T-SQL (II)
+WITH QuotaCount AS (
+SELECT SalesPerson, SalesYear, CurrentQuota, 
+       ROW_NUMBER() 
+       OVER (PARTITION BY CurrentQuota ORDER BY CurrentQuota) AS QuotaList
+FROM SaleGoal 
+)
+
+SELECT CurrentQuota, QuotaList AS Mode 
+FROM QuotaCount 
+WHERE QuotaList IN (SELECT  MAX(QuotaList) FROM QuotaCount)
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
