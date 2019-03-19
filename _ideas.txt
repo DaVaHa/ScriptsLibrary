@@ -1,5 +1,7 @@
 IDEAS
 
+=> https://www.ml4aad.org/automl/auto-sklearn/!!
+
 - communie collectie evolutie over jaren heen?
 
 - print neighbours
