@@ -44,3 +44,28 @@ plt.matshow(dataframe.corr())
 # copy dataframe
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.copy.html
 df_copy = df.copy() # (!) NOT df_copy = df (!) -> Changes to the original will be reflected in the shallow copy (and vice versa) (!)
+
+
+# dataframe plot : two lines in same plot
+ax = df1.plot(x="year",y="proportion_deaths", label="clinic 1")
+df2.plot(x="year", y="proportion_deaths", label="clinic 2", ax=ax)  # notice ax variable!
+ax.set_ylabel("Proportion deaths")
+
+
+# bootstrapping of dataframe column
+# = quantifying uncertainty of estimate
+# = simulating data collection number of times by drawing randomly from data with replacement
+# A bootstrap analysis of the reduction of deaths due to handwashing
+boot_mean_diff = []
+for i in range(3000):
+    boot_before = before_proportion.sample(frac=1, replace=True) # bootstrapping of full column &
+    boot_after = after_proportion.sample(frac=1, replace=True) # & with replacement
+    boot_mean_diff.append( boot_after.mean() - boot_before.mean() )  # avg differences in list
+
+# Calculating a 95% confidence interval from boot_mean_diff 
+confidence_interval = pd.Series(boot_mean_diff).quantile([0.025, 0.975]) # from list to pd.Series
+confidence_interval
+
+
+
+
