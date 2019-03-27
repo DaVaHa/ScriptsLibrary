@@ -1,0 +1,320 @@
+INTRODUCTION TO RELATIONAL DATABASES IN SQL (POSTGRESQL)
+
+
+Relation database : 
+- real-life entities become tables
+- reduced redundancy
+- data integrity by relationships
+
+constraints, keys, referential integrity
+
+
+### POSTGRESQL ###
+
+metadata in database 'information_schema'
+
+select table_schema, table_name
+from information_schema.tables;
+
+select table_name, column_name, data_type
+from information_schema.columns
+where table_name = 'pg_table';
+
+entity relationship diagram
+
+
+# Create tables
+CREATE TABLE table_name (
+  column_a data_type,
+  column_b data_type
+);
+
+# Add column
+ALTER TABLE table_name
+ADD COLUMN column_name data_type;
+
+# Insert data
+INSERT INTO table_name (column_a, column_b)
+VALUES ("value_a", "value_b");
+
+# Rename column
+ALTER TABLE table_name
+RENAME COLUMN old_name TO new_name;
+
+# Drop column
+ALTER TABLE table_name
+DROP COLUMN column_name;
+
+# Delete table
+DROP TABLE table_name;
+
+
+## Better data quality with constraints
+
+Type of constraints
+- Attribute constraints, e.g. data types on columns
+- Key constraints, e.g. primary keys
+- Referential integrity constraints, enforced through foreign keys
+
+Why?
+- Constraints give the data structure
+- Constraints help with consistency, and thus data quality
+- Data quality is a business advantage / data science prerequisite
+- Enforcing is difficult, but PostgreSQL helps
+
+
+# Type conversion
+CAST(column AS data_type)
+
+
+## Data types
+- enforced on columns
+- defines 'domain' of column
+- define what operations are possible
+- enforce consistent storage of values
+
+Common data types : 
+- text : character strings of any length
+- varchar(n) : variable length of n characters
+- char(n) : fixed-length of n characters
+- boolean : true,false,null
+- date, time & timestamp : various formats for date and time calculations
+- numeric : arbitrary precision number, e.g. 3.1457
+- integer : whole numbers in the range of -2147483648 and +2147483647
+
+
+# Alter type of column
+ALTER TABLE students
+ALTER COLUMN name 
+TYPE varchar(128);
+
+ALTER TABLE students
+ALTER COLUMN average_grade
+TYPE integer
+-- Turns 5.54 into 6, not 5, before type conversion
+USING ROUND(average_grade);  # rounding instead of truncating number
+
+ALTER TABLE table_name
+ALTER COLUMN column_name
+TYPE varchar(x)
+USING SUBSTRING(column_name FROM 1 FOR x)    # Truncate string
+
+
+## Not null & unique constraints
+
+When creating a table or after table has been created:
+
+CREATE TABLE students (
+ ssn integer not null,
+ lastname varchar(64) not null,
+ home_phone integer,
+ office_phone integer
+);
+
+ALTER TABLE students 
+ALTER COLUMN home_phone 
+SET NOT NULL;
+
+ALTER TABLE students 
+ALTER COLUMN home_phone 
+DROP NOT NULL;
+
+CREATE TABLE table_name (
+ column_name UNIQUE
+);
+ 
+ALTER TABLE table_name
+ADD CONSTRAINT some_name UNIQUE(column_name);
+
+
+
+## Keys & superkeys
+
+Key = attribute that identify a record uniquely
+As long as attributes can be removed: superkey
+If no more attributes can be removed: minimal superkey or key
+
+select COUNT(distinct (firstname, lastname)) 
+FROM professors;
+
+
+## Primary keys
+
+- one primary key per database table
+- uniquely identifies records, e.g. for referencing in other tables
+- unique and not-null constraints both apply
+- primary keys are time-invariant : choose columns wisely!
+
+
+CREATE TABLE products (
+    product_no integer UNIQUE NOT NULL,
+    name text,
+    price numeric
+);
+
+CREATE TABLE products (
+    product_no integer PRIMARY KEY,
+    name text,
+    price numeric
+);
+
+ CREATE TABLE example (
+    a integer,
+    b integer,
+    c integer,
+    PRIMARY KEY (a, c)
+);
+
+ALTER TABLE table_name
+ADD CONSTRAINT some_name PRIMARY KEY (column_name)
+
+
+## Surrogate keys
+
+Primary keys should be built from as few columns as possible
+Primary keys should never change over time
+
+ALTER TABLE cars
+ADD COLUMN id serial PRIMARY KEY;  # serial = auto-increment
+
+
+# Another type of surrogate key
+
+ALTER TABLE table_name
+ADD COLUMN column_c varchar(256);
+
+UPDATE table_name
+SET column_c = CONCAT(column_a, column_b);
+
+ALTER TABLE table_name
+ADD CONSTRAINT pk PRIMARY KEY (column_c);
+
+SELECT COUNT(DISTINCT(make, model)) 
+FROM cars;
+
+
+
+## Foreign Keys
+
+- A foreign key (FK) points to a primary key (PK) of another table
+- Domain of FK must be equal to domain of PK
+- Each value of a FK must exist in the PK of the other table (FK constraint or "referential integrity")
+- FKs are not actual 'keys'
+
+
+CREATE TABLE manufacturers (
+ name varchar(255) PRIMARY KEY
+);
+
+INSERT INTO manufacturers 
+VALUES ('Ford'), ('VW'), ('GM');
+
+CREATE TABLE cars (
+ model varchar(255) PRIMARY KEY,
+ manufacturer_name integer REFERENCES manufacturers (name)
+);
+
+INSERT INTO cars 
+VALUES ('Ranger', 'Ford'), ('Beetle', 'VW');
+
+
+ALTER TABLE a 
+ADD CONSTRAINT a_fkey FOREIGN KEY (b_id) REFERENCES b (id);
+
+
+
+## Relationships
+
+1-N relationships are implemented with one foreign key (every professor only 1 university)
+N-M relationships are implemented with a foreign key for every connected table (a professor can have many organization affiliations)
+
+
+UPDATE affiliations
+SET professor_id = professors.id
+FROM professors
+WHERE affiliations.firstname = professors.firstname AND affiliations.lastname = professors.lastname;
+
+
+## Reduce redundancy where possible ##
+
+
+## Referential integrity
+
+- A record referencing another table must refer to an existing record in that table!
+- Specified between two tables
+- Enforced through foreign keys
+
+
+Referential integrity can be violated when:
+- a record in table B that is referenced from a record in table A is deleted.
+- a record in table A referencing a non-existing record from table B is inserted.
+
+Foreign keys prevent violations!
+
+CREATE TABLE a (
+ id integer PRIMARY KEY,
+ column_a varchar(64), 
+ ...,
+ b_id integer REFERENCES b (id) ON DELETE NO ACTION   # default # no action
+);
+
+
+CREATE TABLE a (
+ id integer PRIMARY KEY,
+ column_a varchar(64), 
+ ...,
+ b_id integer REFERENCES b (id) ON DELETE CASCADE  # if deleted in table b, will delete in table a!
+);
+
+
+ON DELETE...
+
+...NO ACTION: Throw an error
+...CASCADE: Delete all referencing records
+...RESTRICT: Throw an error
+...SET NULL: Set the referencing column to NULL
+...SET DEFAULT: Set the referencing column to its default value
+
+
+=> Altering a key constraint doesn't work with 'alter column'.
+=> You have to delete the key constraint and re-create a new constraint with the different 'on delete' behavior.
+
+
+-- Identify the correct constraint name
+SELECT constraint_name, table_name, constraint_type
+FROM information_schema.table_constraints
+WHERE constraint_type = 'FOREIGN KEY';
+
+-- Drop the right foreign key constraint
+ALTER TABLE affiliations
+DROP CONSTRAINT affiliations_organization_id_fkey;
+
+-- Add a new foreign key constraint from affiliations to organizations which cascades deletion
+ALTER TABLE affiliations
+add constraint affiliations_organization_id_fkey foreign KEY (organization_id) references organizations (id) on delete cascade;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
