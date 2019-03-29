@@ -1,9 +1,11 @@
 '''
 
-Tricks on Python Library : Auto Sklearn
+Tricks on Python Library : Auto Sklearn (only runs on Linux...)
 
 https://www.automl.org/automl/auto-sklearn/
+https://automl.github.io/auto-sklearn/stable/
 
+pip install auto-sklearn
 '''
 
 

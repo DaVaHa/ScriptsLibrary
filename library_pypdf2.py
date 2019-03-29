@@ -2,6 +2,7 @@
 
 Tricks on Python Library : PYPDF2
 
+https://pythonhosted.org/PyPDF2/index.html
 https://automatetheboringstuff.com/chapter13/
 '''
 
