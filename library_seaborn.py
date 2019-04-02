@@ -19,3 +19,11 @@ plt.show()
 # https://seaborn.pydata.org/generated/seaborn.heatmap.html
 sns.heatmap(flights, annot=True, fmt="d")
 plt.show()
+
+
+# scatterplot + regression line
+# https://seaborn.pydata.org/tutorial/regression.html
+# https://seaborn.pydata.org/generated/seaborn.regplot.html
+import seaborn as sns; sns.set(color_codes=True)
+tips = sns.load_dataset("tips")
+ax = sns.regplot(x="total_bill", y="tip", data=tips)
