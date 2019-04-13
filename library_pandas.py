@@ -66,6 +66,7 @@ for i in range(3000):
 confidence_interval = pd.Series(boot_mean_diff).quantile([0.025, 0.975]) # from list to pd.Series
 confidence_interval
 
-
+# value count of column
+df.column_name.value_counts().sort_index()
 
 
