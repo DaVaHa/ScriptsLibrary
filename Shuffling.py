@@ -56,6 +56,7 @@ from statsmodels.stats.weightstats import ttest_ind
 # t = test statistic
 # p = p-value of t-test
 # dof = degrees of freedom used in t-test
+# alternative = 'larger', 'smaller' or 'two-sided'
 t, p, dof = ttest_ind(test_set_1, test_set_2, alternative='larger', usevar='unequal')
 
 #print(t)
