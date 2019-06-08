@@ -1,0 +1,194 @@
+CUSTOMER SEGMENTATION IN PYTHON
+
+### K-MEANS CLUSTERING ###
+
+
+## DATA PREPROCESSING ##
+
+
+k-means clustering
+- one of the most popular unsupervised learning model
+- simple and fast
+- works well (with certain assumptions about the data)
+
+Assumptions k-means clustering:
+- symmetric distribution of variables (not skewed)
+- variables with same average values (ensures that each metric gets an equal weight in k-means calculation)
+- variables with same variance
+
+Skewed variables
+- skewed shows as distribution with right/left tail
+
+Skewness is best removed by a logarithmic transformation for every skewed variable (distribution becomes more symmetrical)
+(only works for positive values - mostly the case with customer behavior or purchasing patterns)
+
+K-means assumes equal mean & equal variance (not the case with RFM data)
+
+
+## Statistics of dataset
+
+# Print the average values of the variables in the dataset
+print(data.mean())
+# Print the standard deviation of the variables in the dataset
+print(data.std())
+# Get the key statistics of the dataset
+print(data.describe())
+
+
+## Manage skewed variables
+
+Visual analysis of the distributions : if it has a tail, it is skewed
+
+import seaborn as sns
+from matplotlib import pyplot as plt
+sns.distplot(datamart['Recency'])
+sns.distplot(datamart['Frequency'])
+plt.show()
+
+Logarithmic transformation (positive values only)
+
+Other possibility is Box-Cox transformation.
+
+import numpy as np
+frequency_log= np.log(datamart['Frequency'])
+sns.distplot(frequency_log)
+plt.show()
+
+
+# Dealing with negative values
+
+Adding constant before log transformation : 
+Best practice is to add absolute value of the lowest negative value + small constant (like 1), to force values to be all positive
+
+Cube root transformation
+
+
+## Checking Skewedness
+
+plt.subplot(3, 1, 1); sns.distplot(data['var1'])
+plt.subplot(3, 1, 2); sns.distplot(data['var2'])
+plt.subplot(3, 1, 3); sns.distplot(data['var3'])
+plt.show()
+
+
+## Transform variables 
+
+# Apply log transformations & visualize
+data['var2_log'] = np.log(data['var2'])
+data['var3_log'] = np.log(data['var3'])
+plt.subplot(2, 1, 1); sns.distplot(data['var2_log'])
+plt.subplot(2, 1, 2); sns.distplot(data['var3_log'])
+plt.show()
+
+
+# Centering & scaling variables
+
+Identify issue:
+- analyze key statistics of dataset (data.describe())
+- compare mean & standard deviation
+
+K-means works well on variables with the same mean
+Centering variables is done by subtracting average value from each observation
+
+datamart_centered = datamart_rfm - datamart_rfm.mean()
+datamart_centered.describe().round(2)
+
+K-means works better on variables with the same variance / standard deviation
+Scaling variables is done by dividing them by standard deviation of each
+
+datamart_scaled = datamart_rfm / datamart_rfm.std()
+datamart_scaled.describe().round(2)
+
+Combining centering & scaling
+- subtract mean and divide by standard deviation manually  (=normalizing! mean = 0, std = 1)
+- use a scaler from scikit-learn library (returns numpy.ndarray object)
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(datamart_rfm)
+datamart_normalized = scaler.transform(datamart_rfm)
+
+print('mean: ', datamart_normalized.mean(axis=0).round(2))
+print('std: ', datamart_normalized.std(axis=0).round(2))
+mean:  [-0. -0.  0.]
+std:  [1. 1. 1.]
+
+
+# Normalize data with scikit-learn
+
+scaler = StandardScaler()
+scaler.fit(data)
+data_normalized = scaler.transform(data)
+data_normalized = pd.DataFrame(data_normalized, index=data.index, columns=data.columns)
+print(data_normalized.describe().round(2))
+
+
+# Why the sequence matters
+- log transformation only works with positive data
+- normalization forces data to have negative values and log transformation will not work
+
+## Sequence ## 
+1. Unskew the data - log transformation
+2. Standardize to the same average values
+3. Scale to the same standard deviation
+4. Store as a seperate array to be used for clustering
+
+
+import numpy as np
+datamart_log = np.log(datamart_rfm)   # 1
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(datamart_log)   # 2 & 3
+
+datamart_normalized = scaler.transform(datamart_log)  # 4
+
+
+## PREPROCESSING : EXAMPLE ##
+
+# 1. Plot RFM distributions
+plt.subplot(3, 1, 1); sns.distplot(datamart_rfm['Recency'])
+plt.subplot(3, 1, 2); sns.distplot(datamart_rfm['Frequency'])
+plt.subplot(3, 1, 3); sns.distplot(datamart_rfm['MonetaryValue'])
+plt.show()
+
+# 2. Unskew & Normalize RFM data
+datamart_log = np.log(datamart_rfm)
+scaler = StandardScaler()
+scaler.fit(datamart_log)
+datamart_normalized = scaler.transform(datamart_log)
+datamart_normalized = pd.DataFrame(data=datamart_normalized, index=datamart_rfm.index, columns=datamart_rfm.columns)
+print(datamart_normalized.head(10))
+
+# 3. Plot tranformed distributions
+plt.subplot(3, 1, 1); sns.distplot(datamart_normalized['Recency'])
+plt.subplot(3, 1, 2); sns.distplot(datamart_normalized['Frequency'])
+plt.subplot(3, 1, 3); sns.distplot(datamart_normalized['MonetaryValue'])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

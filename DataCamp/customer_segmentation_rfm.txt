@@ -1,0 +1,144 @@
+CUSTOMER SEGMENTATION IN PYTHON
+
+### Recency, Frequency, Monetary Value ###
+
+Behavorial customer segmentation based on three metrics:
+- Recency (R) : how recent last purchase was
+- Frequency (F) : how many purchases last 12M
+- Monetary Value (M) : how much has customer spent in last 12M
+
+RFM values can be grouped in several ways:
+- percentiles e.g. quantiles
+- pareto 80/20 split
+- custom - based on business knowledge
+
+=> Percentiles:
+- sort customers based on metric
+- break customers into predefined number of groups of equal size
+- assign label to each group
+
+
+## Divide list in quartiles
+
+qcut() function in pandas
+
+spend_quartiles = pd.qcut(data['Spend'], q=4, labels=range(1,5))
+data['Spend_Quartile'] = spend_quartiles
+data.sort_values('Spend')
+
+
+## Inverse label (recency)
+
+# Create numbered labels
+r_labels = list(range(4, 0, -1))
+# Divide into groups based on quartiles
+recency_quartiles = pd.qcut(data['Recency_Days'], q=4, labels=r_labels)
+# Create new column
+data['Recency_Quartile'] = recency_quartiles
+# Sort recency values from lowest to highest
+data.sort_values('Recency_Days')
+
+Also possible to use string values:
+# Create string labels
+r_labels = ['Active', 'Lapsed', 'Inactive', 'Churned']
+
+
+
+# DEFINITIONS #
+
+- Recency - days since last customer transaction
+- Frequency - number of transactions in the last 12 months
+- Monetary Value - total spend in the last 12 months
+
+
+## Aggregate on customer level
+
+# Aggregate data on a customer level
+datamart = online.groupby(['CustomerID']).agg({
+    'InvoiceDate': lambda x: (snapshot_date - x.max()).days,
+    'InvoiceNo': 'count',
+    'TotalSum': 'sum'})
+
+# Rename columns for easier interpretation
+datamart.rename(columns = {'InvoiceDate': 'Recency',
+                           'InvoiceNo': 'Frequency',
+                           'TotalSum': 'MonetaryValue'}, inplace=True)
+# Check the first rows
+datamart.head()
+
+
+
+## Calculate RFM Segment & Score 
+
+Concatenate RFM quartile values to RFM_Segment
+Sum RFM quartiles values to RFM_Score
+
+def join_rfm(x): return str(x['R']) + str(x['F']) + str(x['M'])
+datamart['RFM_Segment'] = datamart.apply(join_rfm, axis=1)
+datamart['RFM_Score'] = datamart[['R','F','M']].sum(axis=1)
+
+
+
+## Calculate Quartiles
+
+# Create labels for Recency and Frequency
+r_labels = range(3, 0, -1); f_labels = range(1, 4)
+
+# Assign these labels to three equal percentile groups 
+r_groups = pd.qcut(datamart['Recency'], q=3, labels=r_labels)
+
+# Assign these labels to three equal percentile groups 
+f_groups = pd.qcut(datamart['Frequency'], q=3, labels=f_labels)
+
+# Create new columns R and F 
+datamart = datamart.assign(R=r_groups.values, F=f_groups.values)
+
+# Create labels for MonetaryValue
+m_labels = range(1, 4)
+
+# Assign these labels to three equal percentile groups 
+m_groups = pd.qcut(datamart['MonetaryValue'], q=3, labels=m_labels)
+
+# Create new column M
+datamart = datamart.assign(M = m_groups.values)
+
+# Calculate RFM_Score
+datamart['RFM_Score'] = datamart[['R','F','M']].sum(axis=1)
+print(datamart['RFM_Score'].head())
+
+
+## Inspect size of segments
+datamart.groupby('RFM_Segment').size().sort_values(ascending=False)[:10]
+
+
+## Summary metrics per RFM score
+datamart.groupby('RFM_Score').agg({
+    'Recency': 'mean',
+    'Frequency': 'mean',
+    'MonetaryValue': ['mean', 'count'] }).round(1)
+
+
+
+## Grouping into named segments
+def segment_me(df):
+    if df['RFM_Score'] >= 9:
+        return 'Gold'
+    elif (df['RFM_Score'] >= 5) and (df['RFM_Score'] < 9):
+        return 'Silver'
+    else:
+        return 'Bronze'
+
+datamart['General_Segment'] = datamart.apply(segment_me, axis=1)
+datamart.groupby('General_Segment').agg({
+    'Recency': 'mean',
+    'Frequency': 'mean',
+    'MonetaryValue': ['mean', 'count']
+}).round(1)
+
+
+
+
+
+
+
+
