@@ -53,6 +53,8 @@ r_labels = ['Active', 'Lapsed', 'Inactive', 'Churned']
 
 ## Aggregate on customer level
 
+snapshot_date = max(online.InvoiceDate) + datetime.timedelta(days=1)
+
 # Aggregate data on a customer level
 datamart = online.groupby(['CustomerID']).agg({
     'InvoiceDate': lambda x: (snapshot_date - x.max()).days,
@@ -88,7 +90,7 @@ r_labels = range(3, 0, -1); f_labels = range(1, 4)
 r_groups = pd.qcut(datamart['Recency'], q=3, labels=r_labels)
 
 # Assign these labels to three equal percentile groups 
-f_groups = pd.qcut(datamart['Frequency'], q=3, labels=f_labels)
+f_groups = pd.qcut(datamart['FrequencyC'], q=3, labels=f_labels)
 
 # Create new columns R and F 
 datamart = datamart.assign(R=r_groups.values, F=f_groups.values)
