@@ -161,7 +161,8 @@ git push origin your_branch_name
 git pull
 
 
-
+- Remove file from master branch (then commit & push)
+git rm filename.txt
 
 
 
