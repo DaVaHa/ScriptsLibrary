@@ -44,6 +44,9 @@ git rm file_name
 git commit -m "remove file_name"
 git push github master
 
+### DELETE DIRECTORY FROM GIT ###
+git rm -r one-of-the-directories
+
 
 #### CREATE NEW REPO #####
 
