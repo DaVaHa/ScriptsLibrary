@@ -1,0 +1,221 @@
+### DATACAMP - MARKETING ANALYTICS ###
+
+CUSTOMER LIFETIME VALUE  - LINEAR REGRESSION
+CUSTOMER CHURN - LOGISTIC REGRESSION
+SURVIVAL ANALYSIS - MODELING TIME
+PRINCIPAL COMPONENT ANALYSIS - REDUCING DIMENSIONALITY
+
+### CUSTOMER LIFETIME VALUE  - LINEAR REGRESSION ###
+
+str(clvData1, give.attr = FALSE)
+variables : nOrders, nItems, daysSinceLastOrder, margin, returnRatio, shareOwnBrand, shareVoucher,
+shareSale, gender, age, marginPerOrder, itemsPerOrder, futureMargin
+
+# correlation matrix
+library(corrplot)
+clvData1 %>%  select(nOrders, nItems, daysSinceLastOrder, margin, returnRatio, shareOwnBrand, shareVoucher, shareSale, gender, age, marginPerOrder, itemsPerOrder, futureMargin) 
+ %>% cor() %>% corrplot()
+ 
+# Structure of dataset
+str(salesData, give.attr = FALSE)
+
+# Visualization of correlations & boxplots
+salesData %>% select_if(is.numeric) %>%
+  select(-id) %>% 
+  cor() %>% corrplot()
+
+ggplot(salesData) +
+    geom_boxplot(aes(x = preferredBrand, y = salesThisMon))
+	
+ggplot(clvData1, aes(margin, futureMargin)) +
+    geom_point() +
+	geom_smooth(method = "lm", se = FALSE) + 
+	xlab("Margin year 1") + 
+	ylab("Margin year 2")
+	
+# assumptions of Simple Linear Regression Model
+- linear relationship between x and y
+- no measurement error in x (weak exogeneity)
+- independence of errors (= uncorrelated residuals) # one cause of error correlation is violation of linearity assumption
+- expectation of errors is 0
+- constant variance of prediction errors (homoscedasticity)
+- normality of errors
+
+=> Check assumptions by plotting predicted values against estimated residuals (= residual plot)
+
+# Multiple Linear Regression
+multipleLM <- lm(futureMargin ~ margin + nOrders + nItems + daysSinceLastOrder +
+                    returnRatio + shareOwnBrand + shareVoucher + shareSale + 
+                    gender + age + marginPerOrder + marginPerItem + 
+                    itemsPerOrder, data = clvData1)
+summary(multipleLM)
+
+# multicollinearity : problem when variables are higly correlated = cause for unstable coefficients/model
+library(rms)
+vif(multipleLM) # Variance Inflation Factors # increase in variance of coefficient due to multicollinearity
+
+# VIF above 5 is problematic, above 10 is horrible 
+# => remove one with highest VIF of each pair (see corrplot) from model !! (so VIF's are below 5)
+multipleLM2 <- lm(futureMargin ~ margin + nOrders + 
+                    daysSinceLastOrder + returnRatio + shareOwnBrand + 
+                    shareVoucher + shareSale + gender + age + 
+                    marginPerItem + itemsPerOrder, 
+                  data = clvData1)
+vif(multipleLM2)
+
+# p values of coefficients
+p value < 0.05 (if coefficient is significantly different from 0)
+
+# Estimating the full model except some variables
+lm(futureMargin ~ ., data = clvData1) # model containing all variables
+salesModel2 <- lm(salesThisMon ~ . - preferredBrand - nBrands - id, 
+                 data = salesData)
+# Checking variance inflation factors
+vif(salesModel2)
+
+# model validation, model fit & prediction
+R-squared
+F-test = test if R-squared is significantly different from 0
+F-test = test if model is useful or not (if p < 0.05 then yes, useful model)
+
+#  AIC to avoid overfitting
+AIC() from stats package # measure for goodness of fit # penalize every extra explanatory variable
+# comparing two models : take model with least AIC
+
+# Avoid overfitting : other ways (see also Logistic Regression (part 2))
+stepAIC() from MASS package # automatic model selection
+out-of-sample validation
+cross-validation
+
+# Predict future sales
+predSales5 <- predict(salesModel2, newdata = salesData2_4)
+
+
+
+### CUSTOMER CHURN - LOGISTIC REGRESSION ###
+
+# histogram
+ggplot(churnData, aes(x = returnCustomer)) +
+	geom_histogram(stat = "count")
+
+# logistic regression
+# glm = generalized linear model 
+logit <- glm(formula = y ~ x1 + x2 + x3 , family = binomial, churnData)
+summary(logit)
+
+# interpret log-odds coefficients : exponential transformation to odds ratios
+coefsExp <- coef(logit) %>% exp() %>% round(2)
+coefsExp
+
+# stepAIC() - automatic model selection based on AIC value
+# adds or removes variables one by one and calculates AIC value
+# returns reduced model with lowest AIC value
+library(MASS)
+logitNew <- stepAIC(logit, trace = 0) # hide intermediate steps with trace = 0
+summary(logitNew)
+
+# Save the formula of the new model (it will be needed for the out-of-sample part) 
+formulaLogit <- as.formula(summary(logitModelNew)$call)
+formulaLogit
+
+# In-Sample fit and thresholding : evaluation of model fit
+# 3 pseudo R-squared statistics : McFadden, Cox & Snell, Nagelkerke
+# reasonable if > 0.2 ; good if > 0.4; very good if > 0.5
+library(descr)
+LogRegR2(logitNew)
+
+# predict probabilities
+library(SDMTools)
+churnData$predNew <- predict(logitNew, type = "response", na.action = na.exclude) # exclude observations with missing values
+churnData %>% select(returnCustomer, predNew) %>% tail()
+
+# confusion matrix 
+# TN FN
+# FP TP
+confMatrix <- confusion.matrix(churnData$returnCustomer, churnData$predNew, threshold = 0.5) # default threshold = 0.5
+confMatrix
+
+# accuracy - in-sample data fit
+accuracyNew <- sum(diag(confMatrix)) / sum(confMatrix)
+accuracyNew
+
+# calculate threshold for greatest payoff
+# profit of TP vs cost of FP
+payoffMatrix <- data.frame(threshold = seq(from = 0.1, to = 0.5, by = 0.1),
+                           payoff = NA) # Prepare data frame with threshold values and empty payoff column
+payoffMatrix 
+
+for(i in 1:length(payoffMatrix$threshold)) {
+  # Calculate confusion matrix with varying threshold
+  confMatrix <- confusion.matrix(defaultData$PaymentDefault,
+                defaultData$predNew, 
+                threshold = payoffMatrix$threshold[i])
+  # Calculate payoff and save it to the corresponding row
+  payoffMatrix$payoff[i] <- confMatrix[2,2]*1000 + confMatrix[2,1]*(-250) # TP + vs FP -
+}
+payoffMatrix
+
+# out-of-sample validation
+# 1. divide dataset in training & test data
+# Generating random index for training and test set
+# set.seed ensures reproducibility of random components
+set.seed(534381)
+churnData$isTrain <- rbinom(nrow(churnData), 1, 0.66)
+train <- subset(churnData, churnData$isTrain == 1)
+test <- subset(churnData, churnData$isTrain == 0)
+# 2. build model on training data
+# modeling model on train data
+logitTrain <- glm(formula = ..., family = binomial, data = train) # train 
+# Out-of-sample prediction for logitTrain
+test$predNew <- predict(logitTrain, type = "response", newdata = test) # test
+# accury - out-of-sample
+confMatrixTest <- confusion.matrix(test$returnCustomer, test$predNew, threshold = 0.3) # default threshold = 0.5
+accuracyTest <- sum(diag(confMatrixTest)) / sum(confMatrixTest)
+accuracyTest
+
+# cross validation
+# divide data in buckets
+# measures are average of models whereby different bucket is used as test
+library(boot)
+Acc03 <- function(r, pi = 0) {
+	cm <- confusion.matrix(r, pi, threshold = 0.3)
+	acc <- sum(diag(cm)) / sum(cm)
+	return(acc)
+}
+# Accuracy 
+set.seed(534381)
+cv.glm(churnData, logitModelNew, cost = Acc03, K = 6)$delta
+
+# Example : out-of-sample
+# Split data in train and test set
+set.seed(534381) 
+defaultData$isTrain <- rbinom(nrow(defaultData), 1, 0.66)
+train <- subset(defaultData, defaultData$isTrain == 1)
+test <- subset(defaultData, defaultData$isTrain  == 0)
+logitTrainNew <- glm(formulaLogit, family = binomial, data = train) # Modeling
+test$predNew <- predict(logitTrainNew, type = "response", newdata = test) # Predictions
+# Out-of-sample confusion matrix and accuracy
+confMatrixModelNew <- confusion.matrix(test$PaymentDefault, test$predNew, threshold = 0.3) 
+sum(diag(confMatrixModelNew)) / sum(confMatrixModelNew) # Compare this value to the in-sample accuracy
+
+# Example : cross validation
+library(boot)
+# Accuracy function
+costAcc <- function(r, pi = 0) {
+  cm <- confusion.matrix(r, pi, threshold = 0.3)
+  acc <- sum(diag(cm)) / sum(cm)
+  return(acc)
+}
+# Cross validated accuracy for logitModelNew
+set.seed(534381)
+cv.glm(defaultData, logitModelNew, cost = costAcc, K = 6)$delta[1]
+
+
+
+### SURVIVAL ANALYSIS - MODELING TIME ###
+
+
+
+
+
+

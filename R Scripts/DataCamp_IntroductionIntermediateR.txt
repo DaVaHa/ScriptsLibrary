@@ -1,0 +1,459 @@
+### DATACAMP - INTRODUCTION TO R ###
+Cb63VEcaS.VN5<]F
+
+# Mathematical operators
+Addition: +
+Subtraction: -
+Multiplication: *
+Division: /
+Exponentiation: ^
+Modulo: %%
+
+# Creating a variable
+my_var <- 4
+
+# Data types
+Decimal values like 4.5 are called numerics.
+Natural numbers like 4 are called integers. Integers are also numerics.
+Boolean values (TRUE or FALSE) are called logical.
+Text (or string) values are called characters.
+
+# Check data type
+class(my_var)
+
+# Creating vectors (= One-dimensional arrays) with the 'combine'-function
+numeric_vector <- c(1, 2, 3)
+character_vector <- c("a", "b", "c")
+
+# Naming elements of vectors
+names(poker_vector) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
+# Summing two vectors = element-wise sum
+c(1, 2, 3) + c(4, 5, 6) = c(5, 7, 9)
+
+# Sum of all elements 
+total_poker <- sum(poker_vector)
+
+# !! # The first element in a vector has index 1, not 0 as in many other programming languages.
+poker_vector <- c(140, -50, 20, -120, 240)
+roulette_vector <- c(-24, -50, 100, -350, 10)
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+names(poker_vector) <- days_vector
+names(roulette_vector) <- days_vector
+poker_wednesday <- poker_vector[3]  # = 3rd element !! (<-> [3] in Python = 4th element)
+
+# Subselection of vectors
+poker_midweek <- poker_vector[c(2,3,4)] # vector with index of elements
+roulette_midweek <- roulette_vector[2:4]  # = element 2, 3 & 4 !! (<-> Python = only 2 & 3)
+poker_start <- poker_vector[c("Monday", "Tuesday", "Wednesday")] # vector with names of elements
+  
+# Average of all elements
+mean(poker_start)
+
+# Logical operators
+< for less than
+> for greater than
+<= for less than or equal to
+>= for greater than or equal to
+== for equal to each other
+!= not equal to each other
+
+# Logical vectors : returns vector with TRUE or FALSE for every element depending on condition
+selection_vector <- poker_vector > 0
+Monday Tuesday Wednesday Thursday Friday
+TRUE   FALSE   TRUE      FALSE    TRUE
+
+# Passing a logical vector in square brackets = only selecting the elements that correspond to TRUE
+poker_winning_days <- poker_vector[selection_vector]
+
+# Matrix = two-dimensional collection of elements of the same data type arranged into rows and columns
+matrix(1:9, byrow = TRUE, nrow = 3) # numbers 1 to 9, fill by row, 3 rows
+
+new_hope <- c(460.998, 314.4)
+empire_strikes <- c(290.475, 247.900)
+return_jedi <- c(309.306, 165.8)
+box_office <- c(new_hope, empire_strikes, return_jedi)
+star_wars_matrix <- matrix(box_office, byrow=TRUE, nrow=3)
+
+# Naming rows & columns of matrix
+region <- c("US", "non-US")
+titles <- c("A New Hope", "The Empire Strikes Back", "Return of the Jedi")
+rownames(star_wars_matrix) <- titles
+colnames(star_wars_matrix) <- region
+
+# Calculate sum by rows - rowSums()
+worldwide_vector <- rowSums(star_wars_matrix)
+
+# Calculate sum by columns - colSums()
+total_revenue_vector <- colSums(all_wars_matrix)
+
+# Add column(s)/vector(s) to matrix - cbind()
+all_wars_matrix <- cbind(star_wars_matrix, worldwide_vector)
+
+# Add row(s) to matrix - rbind()
+all_wars_matrix <- rbind(star_wars_matrix, star_wars_matrix2)
+
+# Check content of workspace
+ls()
+
+# Matrix subselection
+my_matrix[1,2] selects the element at the first row and second column.
+my_matrix[1:3,2:4] results in a matrix with the data on the rows 1, 2, 3 and columns 2, 3, 4
+my_matrix[,1] selects all elements of the first column.
+my_matrix[1,] selects all elements of the first row
+
+# Mathematical operators on matrices work in an element-wise way in R.
+matrix_1 * matrix_2 = matrix with element-wise product (= not the standard matrix multiplication !!)
+
+# Factor = a statistical data type used to store categorical variables (= limited number of categories) - factor()
+sex_vector <- c("Male", "Female", "Female", "Male", "Male")
+factor_sex_vector <- factor(sex_vector)
+
+# Nominal variables are categorical variables without an implied order. (fe Dog, Cat, Fish)
+# Ordinal variables do have a natural ordering. (fe Low, Medium, High)
+
+animals_vector <- c("Elephant", "Giraffe", "Donkey", "Horse")
+factor_animals_vector <- factor(animals_vector)
+factor_animals_vector
+
+temperature_vector <- c("High", "Low", "High","Low", "Medium")
+factor_temperature_vector <- factor(temperature_vector,    
+									order = TRUE,    # = ordinal factor
+									levels = c("Low", "Medium", "High"))  # ranking low to high, otherwise alphabetically
+factor_temperature_vector
+
+# Watch out: the order with which you assign the levels is important. 
+If you type levels(factor_survey_vector), you'll see that it outputs [1] "F" "M". 
+If you don't specify the levels of the factor when creating the vector, R will automatically assign them alphabetically.
+To correctly map "F" to "Female" and "M" to "Male", the levels should be set to c("Female", "Male"), in this order.
+
+survey_vector <- c("M", "F", "F", "M", "M")
+factor_survey_vector <- factor(survey_vector)
+levels(factor_survey_vector) # = "F" "M"
+levels(factor_survey_vector) <- c("Female", "Male")  # alphabetically !
+factor_survey_vector
+
+# Generate summary
+summary(factor_survey_vector)
+
+# A dataframe has the variables of a data set as columns and the observations as rows.
+head(mtcars) # first rows of dataset
+tail(mtcars) # last rows of dataset
+str(mtcars) # structure of dataset
+
+# Create dataframe
+planets_df <- data.frame(name, type, diameter, rotation, rings)
+
+# Selecting from dataframe
+my_df[1,2] selects the value at the first row and second column
+my_df[1:3,2:4] selects rows 1, 2, 3 and columns 2, 3, 4
+my_df[1, ] selects all elements of the first row
+planets_df[1:3,"type"] 
+planets_df$diameter # column diametere from dataframe planets_df
+
+# Subset from dataframe - subset()
+subset(planets_df, subset = planets_df$diameter < 1)
+
+# Sorting dataframe - order()
+positions <- order(planets_df$diameter)
+planets_df[positions,]
+
+# Vectors (one dimensional array): The elements in a vector all have the same data type.
+# Matrices (two dimensional array): The elements in a matrix all have the same data type.
+# Data frames (two-dimensional objects): Elements within columns all have the same data type.
+
+# List (one dimensional array) : Elements can be of mixed data type, even othere lists, dataframes, etc. - list()
+my_list <- list(my_vector, my_matrix, my_df)
+names(my_list) <- c("vec", "mat", "df")
+OR 
+my_list <- list(vec = my_vector, mat = my_matrix, df = my_df)
+
+# Selecting from lists
+shining_list[[1]]  # double square brackets (single brackets also select name of element)
+shining_list[["reviews"]]
+shining_list$reviews
+
+# Adding elements to lists
+shining_list_full <- c(shining_list, year = 1980)
+shining_list_full
+str(shining_list_full) 
+
+
+### DATACAMP - INTERMEDIATE R ###
+
+# Relational operators
+== equality   (== comparison vs = assignment)
+!= inequality
+> & >=
+< & <=
+
+# Characters are compared alphabetically
+# TRUE coerces to 1
+# FALSE coerces to 0
+
+| # = OR operator (fe TRUE | FALSE = TRUE)
+& # = AND operator (fe TRUE & FALSE = FALSE )
+! # = NOT operator (fe !TRUE = FALSE & !FALSE = TRUE)
+
+is.numeric(5) # TRUE
+!is.numeric(5) # FALSE
+
+# && = if used with vectors, operates only first element of vectors 
+# || = if used with vectors, operates only first element of vectors 
+
+c(TRUE, TRUE, FALSE) & c(TRUE, FALSE, FALSE)  # TRUE FALSE FALSE
+c(TRUE, TRUE, FALSE) && c(TRUE, FALSE, FALSE)  # TRUE 
+c(TRUE, TRUE, FALSE) | c(TRUE, FALSE, FALSE)  # TRUE TRUE FALSE
+c(TRUE, TRUE, FALSE) || c(TRUE, FALSE, FALSE)  # TRUE 
+
+# if/else/else if statement
+if (condition) {
+	expr1
+} else if (condition2) {
+	expr2
+} else {
+	expr3
+}
+	
+if (num_views > 15) {
+  print("You're popular!")
+} else if (num_views <= 15 & num_views > 10) {
+  print("Your number of views is average")
+} else {
+  print("Try to be more visible!")
+}
+
+# while/break statement
+ctr <- 1
+while (condition) {
+	if (ctr %% 5 == 0) {
+	 break
+	 }	
+	print(paste("ctr is set to", ctr))
+	ctr <- ctr + 1 
+}
+
+# for/next loop
+for (var in seq) {
+	if (condition) {
+		next
+	}
+	expr
+}
+
+for (i in 1:length(cities)) {
+	print(cities[i])
+}
+
+# looping over matrix
+for (i in 1:nrow(ttt)) {
+  for (j in 1:ncol(ttt)) {
+    print(paste("On row", i,"and column", j, "the board contains", ttt[i,j]))
+  }
+}
+
+# looping over characters from string
+rquote <- "r's internals are irrefutably intriguing"
+chars <- strsplit(rquote, split = "")[[1]]
+
+
+# functions
+sd() # standard deviation 
+values <- c(1,5,6,7)
+sd(values)
+
+# documentation/help with functions
+help(function)
+?function
+
+# show arguments and their defaults of functions
+args(sd)
+
+# mean absolute deviation
+mean(abs(x-y), na.rm = TRUE)
+
+# creating your own function
+triple <- function(x) {
+	y <- 3 * x
+	return(y)
+}
+
+math_magic <- function(a, b = 1) {
+	a/b + a*b
+}
+
+# installing packages
+install.packages("ggvis")
+
+# load package = attach to search list
+search() # = overview of loaded R packages & objects
+library("ggvis") # gives error if library does not exist
+require("ggvis") # gives FALSE if library does not exist
+
+
+# lapply function : apply function on list or vector element-wise & returns list
+nyc <- list( pop = 8405837,
+			boroughs = c("Manhattan","Bronx","Brooklyn"),
+			capital = FALSE
+			)
+for (info in nyc) {
+	print(class(info))
+}
+lapply(nyc, class)
+
+cities <- c("New York","Paris","London","Tokyo")
+num_chars <- c()
+for (i in 1:length(cities)) {
+	num_chars[i] <- nchar(cities[i])
+}
+lapply(cities, nchar)
+
+# list to vector of lapply results
+unlist(lapply(cities, nchar))  # makes vector of list
+
+oil_prices <- list(2.37,2.49,2.18,2.22,2.47,2.32)
+triple <- function(x) { 3 * x }
+result <- lapply(oil_prices, triple)
+str(result)
+unlist(result) # creates vector of list
+
+multiply <- function(x, factor) { x * factor }
+times3 <- lapply(oil_prices, multiply, factor = 3)
+unlist(times3)
+
+# data type
+typeof(x)
+
+# anonymous functions
+function(x) { 3 * x }
+
+# Use anonymous function inside lapply()
+lapply(list(1,2,3), function(x) { 3 * x })
+
+# sapply function = simplify apply
+sapply(cities, nchar)
+sapply(cities, nchar, USE.NAMES = FALSE)
+
+# check if two objects are equal
+identical(x, y)
+
+# uniform distribution
+runif(10) # 10 elements between 0 and 1
+
+# length of string
+nchar(x) # length("New York") = 1
+
+# lapply : output = list
+# sapply : tries to simplify list to vector/matrix/array
+# vapply : explicitly specify output format
+
+# mathematical functions
+sum()
+round(x, digits = 0)
+abs()
+mean()
+ceiling()
+floor()
+trunc()
+
+seq(start, stop, by = step) # fe seq(7,3, by = -2) = 7,5,3
+
+rep(vector, times = 2) # vector is repeated :  7 5 3 7 5 3 
+rep(vector, each = 2) # each element is repeated : 7 7 5 5 3 3
+
+sort(vector, decreasing = TRUE)  # decreasing = FALSE by default
+
+is.*() # is.list() # TRUE/FALSE
+as.*() # TRUE/FALSE
+
+is.list(c(1,2,3)) # FALSE
+is.list(as.list(c(1,2,3))) # TRUE
+
+append(vector, x) # add elements x at the end of vector
+rev() # reverse elements of vector/list
+
+seq(): Generate sequences, by specifying the from, to, and by arguments.
+rep(): Replicate elements of vectors and lists.
+sort(): Sort a vector in ascending order. Works on numerics, but also on character strings and logicals.
+rev(): Reverse the elements in data structures for which reversal is defined.
+str(): Display the structure of any R object.
+append(): Merge vectors or lists.
+is.*(): Check for the class of an R object.
+as.*(): Convert an R object from one class to another.
+unlist(): Flatten (possibly embedded) lists to produce a vector.
+
+# regular expressions
+grepl(pattern = <regex>, x = <string>) # TRUE/FALSE
+grep() # index of match
+sub(pattern = <regex>, replacement = <str>, x = <str>) # replaces first match only
+gsub() # replaces all matches
+
+. = any character
+* = zero or more times
++ = one or more times
+\\ = escape character # \\. searches for "."
+^ = starts with (caret ^)
+$ = ends with (dollar sign $)
+| = or # a|i : matches a or i 
+
+.*: "any character that is matched zero or more times".
+\\s: Match a space. The "s" is normally a character, escaping it (\\) makes it a metacharacter.
+[0-9]+: Match the numbers 0 to 9, at least once (+).
+([0-9]+): The parentheses are used to make parts of the matching string available to define the replacement. 
+The \\1 in the replacement argument of sub() gets set to the string that is captured by the regular expression [0-9]+.
+
+... ?regex
+
+which() # gives the TRUE indices of a logical object
+
+
+# dates & times
+Sys.Date() # "2019-10-01" (data type 'Date')
+Sys.time() # "2019-10-01 12:07:42 CEST" (data type 'POSIXct' 'POSIXt')
+
+as.Date("1971-05-14") # character to date # by default, R expects format "%Y-%m-%d"
+as.Date("1971-14-05", format= "%Y-%d-%m")
+
+as.POSIXct("1971-05-14 11:25:15") # by default, R expects format %Y-%m-%d %H:%M:%S
+
+In R, dates are represented by Date objects, while times are represented by POSIXct objects.
+
+unclass(my_date)
+unclass(my_time)
+
+packages : lubridate, zoo, xts
+
+%Y: 4-digit year (1982)
+%y: 2-digit year (82)
+%m: 2-digit month (01)
+%d: 2-digit day of the month (13)
+%A: weekday (Wednesday)
+%a: abbreviated weekday (Wed)
+%B: month (January)
+%b: abbreviated month (Jan)
+
+?strptime
+
+%H: hours as a decimal number (00-23)
+%I: hours as a decimal number (01-12)
+%M: minutes as a decimal number
+%S: seconds as a decimal number
+%T: shorthand notation for the typical format %H:%M:%S
+%p: AM/PM indicator
+
+format() # extract date/time information as character strings
+
+today <- Sys.Date()
+today + 1
+today - 1
+as.Date("2015-03-12") - as.Date("2015-02-27")
+
+birth <- as.POSIXct("1879-03-14 14:37:23")
+death <- as.POSIXct("1955-04-18 03:47:12")
+death - birth
+
+diff() # lagged difference between elements
+
+
+
+

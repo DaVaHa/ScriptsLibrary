@@ -1,4 +1,0 @@
-Data Science From Scratch : page 27
-
-
-https://github.com/joelgrus/data-science-from-scratch
