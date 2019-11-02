@@ -9,7 +9,7 @@ Prediction Online Sales
 library(prophet)
 
 # import csv file
-df <- read.csv('C:\\Users\\daniel.vanhasselt.JBC\\Desktop\\R Scripts\\OnlineSales.csv')
+df <- read.csv('U:\\MIT\\Python\\ScriptsLibrary\\R Scripts\\OnlineSales.csv')
 head(df)
 tail(df)
 
@@ -33,7 +33,7 @@ str(data)
 m <- prophet(data)
 
 # create future dataframe for predictions
-future <- make_future_dataframe(m, periods = 365)
+future <- make_future_dataframe(m, periods = 30)
 tail(future)
 
 # predict future data points

@@ -3,16 +3,18 @@ sys.path.insert(0, 'U:\MIT\Python\ScriptsLibrary//')
 
 from PDF_OOP import PDF
 
-claud = PDF(r'C:\Users\daniel.vanhasselt.JBC\Downloads\ClaudMaart.pdf')
+combo = PDF(r'C:\Users\daniel.vanhasselt.JBC\Downloads\DanielVanHasselt_AangifteAJ19.pdf')
 
 
-path = r'C:\Users\daniel.vanhasselt.JBC\Downloads\Claud11-2903.pdf'
+path_file_1 = r'C:\Users\daniel.vanhasselt.JBC\Downloads\SKM_C45819102410270.pdf'
+path_file_2 = r'C:\Users\daniel.vanhasselt.JBC\Downloads\SKM_C45819102410280.pdf'
+path_file_3 = r'C:\Users\daniel.vanhasselt.JBC\Downloads\SKM_C45819102410281.pdf'
+path_file_4 = r'C:\Users\daniel.vanhasselt.JBC\Downloads\SKM_C45819102410271.pdf'
 
 
-claud.add_page(path, 1)
-claud.add_page(path, 3)
-claud.add_page(path, 5)
-claud.add_page(path, 7)
-claud.add_page(path, 9)
+combo.add_page(path_file_1, 0)
+combo.add_page(path_file_2, 0)
+combo.add_page(path_file_3, 0)
+combo.add_page(path_file_4, 0)
 
-claud.export()
+combo.export()

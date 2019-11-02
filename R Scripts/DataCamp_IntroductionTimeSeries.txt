@@ -1,0 +1,151 @@
+DATACAMP - INTRODUCTION TO TIME SERIES ANALYSIS
+##################################################
+
+# Models
+White Noise (WN)
+Random Walk (RW)
+Autoregression (AR)
+Simple Moving Average (MA)
+
+# Inspect data
+print(Nile)
+length(Nile)
+head(Nile, n=10)
+tail(Nile, n=12)
+
+# Plot data
+plot(Nile, xlab = "Year", ylab = "River Volume (1e9 m^{3})", main = "Annual River Nile Volume at Aswan, 1871-1970", type = "b")
+
+# Time series functions 
+start() # first observation
+end() # last observation
+frequency() # number of observations per unit time
+deltat() # fixed time interval between observations
+time() # vector of time indices
+cycle() # position in cycle of each observation
+mean(AirPassengers, na.rm = TRUE) # compute mean, ignoring NAs
+
+# Time series object
+ts()
+time_series <- ts(data_vector, start = 2001, frequency = 1)
+plot(time_series)
+is.ts() # check if time series object
+
+# Plot multiple time series from dataframe
+is.ts(eu_stocks) # Check whether eu_stocks is a ts object
+start(eu_stocks) # View the start, end, and frequency of eu_stocks
+end(eu_stocks)
+frequency(eu_stocks)
+plot(eu_stocks) # Generate a simple plot of eu_stocks
+ts.plot(eu_stocks, col = 1:4, xlab = "Year", ylab = "Index Value", main = "Major European Stock Indices, 1991-1998") # Use ts.plot with eu_stocks
+legend("topleft", colnames(eu_stocks), lty = 1, col = 1:4, bty = "n") # Add a legend to your ts.plot
+
+# Transformations
+log() # linearize a rapid growth trend
+diff() # removes linear trend # represents the increments of successive observations # length = length of time series - 1
+diff(..., lag = s) # seasonal difference transformation # removes periodic trends # default s = 1 # length = length time series - s
+
+# Removing exponential trend via logarithmic transformation
+linear_growth <- log(rapid_growth)
+ts.plot(linear_growth)
+
+# Removing seasonal trends with seasonal differencing
+# Generate a diff of x with lag = 4. Save this to dx
+dx <- diff(x, lag = 4)
+ts.plot(dx)
+length(x)
+length(dx)
+
+# White noise (WN) model
+= simplest example of a stationary process
+fixed mean and variance & no correlation over time
+
+# Simulate White Noise with n = 50 observations  : ARIMA(0,0,0)
+WN_1 <- arima.sim(model = list(order = c(0, 0, 0)), n = 50, mean = 4, sd = 2)
+head(WN_1)
+ts.plot(WN_1)
+
+# Estimating white noise
+arima(WN_2, order = c(0, 0, 0)) # outputs estimated mean (below "intercept") & estimated variance ("sigma^2")
+mean(WN_2)
+var(WN_2)
+
+ARIMA = AutoRegressive Integrated Moving Average
+
+# Random Walk (RW) model : ARIMA(0,1,0) (= recursive white noise data)
+= simple example of a non-stationary process
+no fixed mean or variance, strong dependence over time & changes/increments are white noise (WN)
+random_walk <- arima.sim(model = list(order = c(0,1,0)), n = 100)
+
+# Random Walk : today = yesterday + noise (mean zero white noise) 
+# RW requires initial point & one parameter : WN variance
+diff(RandomWalkSeries) = WhiteNoiseSeries
+
+# Random walk with drift ("trend") : today = constant + yesterday + noise (mean zero white noise)
+# two parameters : constant 'c' & WN variance
+diff(RandomWalkWithDriftSeries) = WhiteNoiseSeries with mean 'c'
+random_walk_drift <- arima.sim(model = list(order = c(0,1,0)), n = 100, mean = 1)
+
+# mean zero White Noise model : its running cumulative sum = random walk process
+
+# Difference your random_walk data
+rw_diff <- diff(random_walk)
+# Plot rw_diff
+ts.plot(rw_diff)
+# Now fit the WN model to the differenced data
+model_wn <- arima(rw_diff, order = c(0,0,0))
+# Store the value of the estimated time trend (intercept)
+int_wn <- model_wn$coef
+# Plot the original random_walk data
+ts.plot(random_walk)
+# Use abline(0, ...) to add time trend to the figure
+abline(0, int_wn)
+
+# Stationary processes 
+# Weak stationarity = mean, variance, covariance constant over time
+# A stationary series should show random oscillation around some fixed level; a phenomenon called mean-reversion
+
+# Regular patterns across periods : not stationary
+# Random Walk : non-stationary
+
+# Use arima.sim() to generate WN data
+white_noise <- arima.sim(model = list(order = c(0,0,0)), n = 100)
+# Use cumsum() to convert your WN data to RW
+random_walk <- cumsum(white_noise)
+# Use arima.sim() to generate WN drift data
+wn_drift <- arima.sim(model = list(order = c(0,0,0)), n = 100, mean = 0.4)
+# Use cumsum() to convert your WN drift data to RW
+rw_drift <- cumsum(wn_drift)
+# Plot all four data objects
+plot.ts(cbind(white_noise, random_walk, wn_drift, rw_drift))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
