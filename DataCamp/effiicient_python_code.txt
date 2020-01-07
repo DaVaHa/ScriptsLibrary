@@ -1,0 +1,78 @@
+CODING BEST PRACTICES WITH PYTHON
+---------------------------------
+
+Efficient Python code :
+= minimal completion time (fast runtime)
+= minimal resource consumption (small memory footprint)
+
+Python:
+- focus on readability
+- using Python's constructs as intended ("Pythonic")
+
+Python Standard Library : built-in objects (types, functions, modules)
+
+# list comprehensions
+NOT: nums = [0,1,2,3,4,5,6,7,8,9,10]
+BUT: nums = list(range(0,11))
+OR: nums = [*range(1,12,2)] # "unpack" range object
+
+# enumerate()
+letters = [ 'a','b','c','d']
+indexed_letters = list(enumerate(letters)) # [(0,'a'),(1,'b'),(2,'c'),(3,'d')]
+indexed_letters2 = list(enumerate(letters, start = 5)) # [(5,'a'),(6,'b'),(7,'c'),(8,'d')]
+OR: [*enumerate(letters, start = 5)] # unpacking enumerate object
+
+# map() & lambda
+nums = [1.5, 2.3, 3.4, 4.6, 5.0]
+rnd_nums = list(map(round, nums))
+print(rnd_nums)
+print(list(map(math.floor, nums)))
+sqrd_nums = list(map(lambda x: x ** 2, nums)
+names_map  = map(str.upper, names)
+
+# numpy array
+= homogeneous = elements must have same type (=> makes it more memory efficient)
+import numpy as np
+numpy_ints = np.array([1,2,3])
+numpy_ints.dtype # int32
+numpy_floats = np.array([1,2,3.0])
+numpy_floats.dtype # float64
+
+# python list vs numpy arrays
+DOESN'T WORK : list_of_nums ** 2 # error
+THIS DOES : numpy_array ** 2 # works! # = element-wise operations
+THIS DOES : numpy_array + 1 # works! # = element-wise operations
+
+# indexing & slicing
+nums2D = [ [1,2,3], [4,5,6] ]
+Python 2-D lists : nums2D[0][1] # two square brackets
+Numpy 2-D array : nums2D[0,1] # two digits seperated by comma
+
+Python 2-D lists : [row[0] for row in nums2D] 
+Numpy 2-D array : nums2D[:,0]
+
+# boolean indexing
+nums = [-2,-1,0,1,2]
+nums_np = np.array(nums)
+nums_np > 0 # array([False,False,False,True,True])
+nums_np[nums_np > 0] # array([1,2]) # = selects elements with True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
