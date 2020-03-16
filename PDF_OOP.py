@@ -37,7 +37,9 @@ class PDF:
         for pageNum in range(pdfReader.numPages):   
             pageObj = pdfReader.getPage(pageNum)   # create object for every page
             self.writer.addPage(pageObj)            # add page to writer object
-
+        # close input file
+        self.input_pdf.close()
+        
     def add_page(self, path_to_input_pdf, page_num):
         
         # read input file
@@ -47,12 +49,13 @@ class PDF:
         # create object for specific page
         pageObj = pdfReader.getPage(page_num)
         # add page to writer object
-        self.writer.addPage(pageObj)            
+        self.writer.addPage(pageObj)
+
     
     def export(self):
         self.writer.write(self.output_file)   # write writer object to output file
         self.output_file.close()    # close/save writer object
-        self.input_pdf.close()   # close input file
+        self.input_pdf.close()      # close input file
 
 
 
