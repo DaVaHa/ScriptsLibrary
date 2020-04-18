@@ -127,5 +127,90 @@ mse <- colMeans(e^2, na.rm = TRUE)
 data.frame(h = 1:8, MSE = mse) %>%
   ggplot(aes(x = h, y = MSE)) + geom_point()
 
+# METHOD 4 : Simple Exponential Smoothing (SES)
+# = more recent observations get more weight
+# works when data has no seasonality or trend
+fc <- ses(marathon, h = 10)
+summary(fc) # model parameters
+autoplot(fc) + autolayer(fitted(fc)) # Plot forecasts incl for training data
+
+# Compare two methods
+train <- subset(marathon, end = length(marathon) - 20) # training set
+fcses <- ses(train, h = 20) # SES forecast
+fcnaive <- naive(train, h = 20) # Naive forecast
+accuracy(fcses, marathon) # train & test accuracy
+accuracy(fcnaive, marathon) # train & test accuracy
+
+# METHOD 5 & 6 : Exponential smoothing with trend (Holt's method)
+# "local linear" trend  = same trend for future forecasts
+# "damped linear" trend = trend levels off to constant
+fc1 <- holt(train, h = 20, PI = FALSE) # PI = prediction intervals
+fc2 <- holt(train, damped = TRUE, h = 20, PI = FALSE)
+autoplot(marathon) + xlab("Year") + ylab("Minutes") +
+  autolayer(fc1, series="Linear trend") +
+  autolayer(fc2, series="Damped trend")
+
+# METHOD 7 & 8: Exponential smoothing with trend & seasonality (Holt-Winters)
+# additive & multiplicative version
+# seasonal component averages zero for additive version and 1 for multiplicative version
+# if seasonality increases with the level of the series => multiplicative version
+aust <- window(austourists, start = 2005)
+fc1 <- hw(aust, seasonal = "additive") # default : damped = FALSE
+fc2 <- hw(aust, seasonal = "multiplicative") # default : damped = FALSE
+# forecasting methods with non-white noise residuals can still provide useful forecasts!
+checkresiduals(fc1)
+checkresiduals(fc2)
+
+
+# (!) METHOD 9 : ETS model = Errors, Trends, Seasonality  (= Automatic Best Model Selection)
+# "innovations state space model"
+# Error = Additive or Multiplicative (= noise increases with level of series)
+# Trend = None, Additive, Damped
+# Seasonality = None, Additive or Multiplicative (=seasonality increases with level of series)
+# Maximum likelihood estimation to optimize parameters & way of generating prediction intervals
+# Best model selection based on AICc (corrected Akaike's Information Criterion)
+ets(ausair) # returns best model, but no forecasts
+ausair %>% ets() %>% forecast() %>% autoplot()
+
+train <- subset(ausair, end = length(ausair) - 5)
+test <- subset(ausair, start = length(ausair) - 5)
+fc <- train %>% ets() %>% forecast(h = 5)
+accuracy(fc, ausair)
+autoplot(fc) + autolayer(test, series = "Test data")
+
+# Fit ETS model
+fitaus <- ets(austa)
+# Check residuals
+checkresiduals(fitaus)
+# Plot forecasts
+autoplot(forecast(fitaus))
+
+# Compare ETS vs Seasonal Naive with Cross Validation
+# Function to return ETS forecasts
+fets <- function(y, h) {
+  forecast(ets(y), h = h)
+}
+# Apply tsCV() for both methods
+e1 <- tsCV(gold, forecastfunction = fets, h = 4)
+e2 <- tsCV(gold, forecastfunction = snaive, h = 4)
+# Compute MSE of resulting errors (watch out for missing values)
+mean(e1^2, na.rm = TRUE)
+mean(e2^2, na.rm = TRUE)
+# Take model with lowest forecast MSE
+bestmse <- mean(e2^2, na.rm = TRUE)
+
+train <- subset(ausbeer, end = length(ausbeer) - 8)
+test <- subset(ausbeer, start = length(ausbeer) - 8)
+e1 <- tsCV(train, forecastfunction = fets, h = 8)
+e2 <- tsCV(train, forecastfunction = snaive, h = 8)
+mean(e1^2, na.rm = TRUE)
+mean(e2^2, na.rm = TRUE)
+fc1 <- train %>% ets() %>% forecast(h = 8)
+fc2 <- train %>% snaive() %>% forecast(h = 8)
+autoplot(train) + autolayer(fc1)
+accuracy(fc, ausbeer)
+
+
+
 
 
