@@ -162,7 +162,7 @@ checkresiduals(fc1)
 checkresiduals(fc2)
 
 
-# (!) METHOD 9 : ETS model = Errors, Trends, Seasonality  (= Automatic Best Model Selection)
+# METHOD 9 : ETS model = Errors, Trends, Seasonality  (= Automatic Best Model Selection)
 # "innovations state space model"
 # Error = Additive or Multiplicative (= noise increases with level of series)
 # Trend = None, Additive, Damped
@@ -211,7 +211,7 @@ autoplot(train) + autolayer(fc1)
 accuracy(fc, ausbeer)
 
 
-# BoxCox transformation
+# Box-Cox transformation
 # = to stabilize variation in time series as level of series increases
 # Transformations : square root (x^0.5), cube root (x^0.3333), logarithm(log(x)), inverse (-1/x)
 # BoxCox : log(x) when lambda = 0 & (x^lambda-1)/lambda when lambda != 0
@@ -286,6 +286,70 @@ accuracy(fc1, qcement)
 accuracy(fc2, qcement)
 # Plot 10-year forecasts using the best model class
 qcement %>% farima(h=8) %>% autoplot()
+
+
+# METHOD 11 : Dynamic regression : to include external variables
+# Time plots of demand and temperatures
+autoplot(elec[, c("Demand", "Temperature")], facets = TRUE)
+# Matrix of regressors
+xreg <- cbind(MaxTemp = elec[, "Temperature"], 
+              MaxTempSq = elec[, "Temperature"]^2, 
+              Workday = elec[,"Workday"]
+)
+# Fit model
+fit <- auto.arima(elec[,"Demand"], xreg = xreg)
+# Forecast fit one day ahead
+forecast(fit, xreg = cbind(20, 400, 1))
+
+
+# METHOD 12 : Dynamic harmonic regression : for weekly, daily or sub-daily data
+# USing Fourier terms (sums of sin & cos)
+# error term to be modeled as a non-seasonal ARIMA process
+# assumes the seasonal pattern does not change over time! 
+# (seasonal ARIMA does allow seasonal pattern to evolve over time)
+fit <- auto.arima(cafe, xreg = fourier(cafe, K = 1), seasonal = FALSE, lambda = 0) # lambda = 0 is log transformation
+fit %>% forecast(xreg = fourier(cafe, K = 1, h = 24)) %>% autoplot() + ylim(1.6, 5.1) # use same value for K !
+# K decides the "wiggly"-ness of the seasonal pattern
+# => try various values for K and select model with lowest AICc value!
+# K can not be more than m/2 (= half the seasonal period)
+
+# Set up harmonic regressors of order 13
+harmonics <- fourier(gasoline, K = 13)
+# Fit regression model with ARIMA errors
+fit <- auto.arima(gasoline, xreg = harmonics, seasonal = FALSE) # seasonality is handled by regressors
+# Forecasts next 3 years
+newharmonics <- fourier(gasoline, K = 13, h = 156)
+fc <- forecast(fit, xreg = newharmonics)
+# Plot forecasts fc
+autoplot(fc)
+
+
+# METHOD 13 : TBATS
+
+# TBATS model 
+# Trigonometric terms for seasonality
+# Box-Cox transformations for heterogeneity
+# ARMA errors for short-term dynamics
+# Trend (possibly damped)
+# Seasonal (including multiple and non-integer periods)
+# = very general and handles a large range of time series
+# = useful for data with large seasonal periods, and multiple seasonal periods
+# entirely automated, but slow for long time series & often too wide prediction intervals
+gasoline %>% tbats() %>% forecast() %>% autoplot() + xlab("Year") + ylab("thousand barrels per day")
+
+# TBATS( Box-Cox transformation parameter, ARMA error, Damping parameter, <Seasonal period,Fourier terms>)
+
+# Plot the gas data
+autoplot(gas)
+# Fit a TBATS model to the gas data
+fit <- tbats(gas)
+# Forecast the series for the next 5 years
+fc <- forecast(fit, h = 60)
+# Plot the forecasts
+autoplot(fc)
+# Record the Box-Cox parameter and the order of the Fourier terms
+lambda <- 0.082
+K <- 5
 
 
 

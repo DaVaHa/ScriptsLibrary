@@ -527,7 +527,122 @@ accuracy(fc2, qcement)
 bettermodel <- fit2
 
 
+### Advanced methods ###
 
+Dynamic regression : to include external information
+- error term is ARIMA process
+- in ordinary regression, we assume error term is white noise
+
+autoplot(uschange[,1:2], facets = TRUE) +
+xlab("Year") + ylab("") + 
+ggtitle("Quarterly changes in US consumption and personal income")
+
+ggplot(aes(x = Income, y = Consumption), data = as.data.frame(uschange)) +
+geom_point() + ggtitle("Quarterly changes in US consumption and personal income")
+
+fit <- auto.arima(uschange[,"Consumption"], xreg = uschange[,"Income"])
+
+# Always check that residuals look like white noise
+
+# Pass future external data for forecasts
+fcast <- forecast(fit, xreg = rep(0.8, 8))
+autoplot(fcast) + xlab("Year") + ylab("Percentage change")
+
+# Time plot of both variables
+autoplot(advert, facets = TRUE)
+# Fit ARIMA model
+fit <- auto.arima(advert[, "sales"], xreg = advert[, "advert"], stationary = TRUE)
+# Check model. Increase in sales for each unit increase in advertising
+salesincrease <- coefficients(fit)[3]
+# Forecast fit as fc
+fc <- forecast(fit, xreg = rep(10,6))
+# Plot fc with x and y labels
+autoplot(fc) + xlab("Month") + ylab("Sales")
+
+# Time plots of demand and temperatures
+autoplot(elec[, c("Demand", "Temperature")], facets = TRUE)
+# Matrix of regressors
+xreg <- cbind(MaxTemp = elec[, "Temperature"], 
+              MaxTempSq = elec[, "Temperature"]^2, 
+              Workday = elec[,"Workday"]
+              )
+# Fit model
+fit <- auto.arima(elec[,"Demand"], xreg = xreg)
+# Forecast fit one day ahead
+forecast(fit, xreg = cbind(20, 400, 1))
+
+# Dynamic harmonic regression
+# Fourier terms : every periodic function can be approximated by sums of sin and cos terms for large enough K
+# m = seasonal period, error term can be modeled as a non-seasonal ARIMA process
+# assumes the seasonal pattern does not change over time! (seasonal ARIMA does allow seasonal pattern to evolve over time)
+fit <- auto.arima(cafe, xreg = fourier(cafe, K = 1), seasonal = FALSE, lambda = 0)
+fit %>% forecast(xreg = fourier(cafe, K = 1, h = 24)) %>% autoplot() + ylim(1.6, 5.1)
+# K decides the "wiggly"-ness of the seasonal pattern
+# => try various values for K and select model with lowest AICc value!
+# K can not be more than m/2 (=half the seasonal period)
+# particularly useful for weekly or daily (or even sub-daily) data
+
+# Set up harmonic regressors of order 13
+harmonics <- fourier(gasoline, K = 13)
+# Fit regression model with ARIMA errors
+fit <- auto.arima(gasoline, xreg = harmonics, seasonal = FALSE) # seasonality is handled by regressors
+# Forecasts next 3 years
+newharmonics <- fourier(gasoline, K = 13, h = 156)
+fc <- forecast(fit, xreg = newharmonics)
+# Plot forecasts fc
+autoplot(fc)
+
+# Harmonic regression for multiple seasonality
+
+# Fit a harmonic regression using order 10 for each type of seasonality
+fit <- tslm(taylor ~ fourier(taylor, K = c(10, 10)))
+# Forecast 20 working days ahead
+fc <- forecast(fit, newdata = data.frame(fourier(taylor, K = c(10,10), h = 960)))
+# Plot the forecasts
+autoplot(fc)
+# Check the residuals of fit
+checkresiduals(fit)
+
+# Often unrealistic to have residuals pass the tests for long time series.
+
+# Plot the calls data
+autoplot(calls)
+# Set up the xreg matrix
+xreg <- fourier(calls, K = c(10,0))
+# Fit a dynamic regression model
+fit <- auto.arima(calls, xreg = xreg, seasonal = FALSE, stationary = TRUE)
+# Check the residuals
+checkresiduals(fit)
+# Plot forecasts for 10 working days ahead
+fc <- forecast(fit, xreg =  fourier(calls, c(10, 0), h = 1690))
+autoplot(fc)
+
+# TBATS model 
+- Trigonometric terms for seasonality
+- Box-Cox transformations for heterogeneity
+- ARMA errors for short-term dynamics
+- Trend (possibly damped)
+- Seasonal (including multiple and non-integer periods)
+
+# TBATS = very general and handles a large range of time series
+# = useful for data with large seasonal periods, and multiple seasonal periods
+# entirely automated (& slow on long time series), often too wide prediction intervals
+gasoline %>% tbats() %>% forecast() %>% autoplot() + xlab("Year") + ylab("thousand barrels per day")
+calls %>% window(start = 20) %>% tbats() %>% forecast() %>% autoplot() + xlab("Weeks") + ylab("Calls")
+
+# TBATS( Box-Cox transformation parameter, ARMA error, Damping parameter, <Seasonal period,Fourier terms>)
+
+# Plot the gas data
+autoplot(gas)
+# Fit a TBATS model to the gas data
+fit <- tbats(gas)
+# Forecast the series for the next 5 years
+fc <- forecast(fit, h = 60)
+# Plot the forecasts
+autoplot(fc)
+# Record the Box-Cox parameter and the order of the Fourier terms
+lambda <- 0.082
+K <- 5
 
 
 

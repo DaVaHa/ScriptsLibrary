@@ -59,6 +59,7 @@ accuracy(fc, test)["Test set","MAPE"]
 
 
 # METHOD 1 & 2 : Naive forecasts = use most (seasonally) recent observation
+
 fc_naive <- naive(train, 6) #forecast
 autoplot(fc_naive) + autolayer(test, series = "Test") + autolayer(fitted(fc_naive), series='Fitted') #plot
 summary(fc_naive) #data
@@ -72,6 +73,7 @@ checkresiduals(fc_snaive) #residuals = white noise (within blue lines) ?
 accuracy(fc_snaive, test) #accuracy - Seasonal Naive
 
 # METHOD 3 : Forecast = mean of all observations
+
 fc_mean <- meanf(train, h = 6) #forecast
 autoplot(fc_mean) + autolayer(test, series = "Test") + autolayer(fitted(fc_mean), series='Fitted') #plot
 summary(fc_mean) #data
@@ -89,6 +91,7 @@ data.frame(h = 1:6, MSE = mse2) %>% ggplot(aes(x = h, y = MSE)) + geom_point() #
 
 
 # METHOD 4 : Simple Exponential Smoothing (SES) = more recent observations get more weight
+
 fc_ses <- ses(train, h = 6)
 autoplot(fc_ses) + autolayer(test, series = "Test") + autolayer(fitted(fc_ses), series='Fitted') #plot
 summary(fc_ses) #data
@@ -96,6 +99,7 @@ train %>% ses() %>% checkresiduals() #residuals = white noise (within blue lines
 accuracy(fc_ses, test) #accuracy - SES
 
 # METHOD 5 & 6 : Exponential smoothing with trend (Holt's method)
+
 # "local linear" trend  = same trend for future forecasts
 # "damped linear" trend = trend levels off to constant
 fc_holt <- holt(train, h = 6, PI = FALSE) # PI = prediction intervals
@@ -115,6 +119,7 @@ autoplot(train) + autolayer(test, series="Test") +
   autolayer(fc_holt_damped, series="Damped trend")
 
 # METHOD 7 & 8: Exponential smoothing with trend & seasonality (Holt-Winters)
+
 # additive & multiplicative version
 # seasonal component averages zero for additive version and 1 for multiplicative version
 # if seasonality increases with the level of the series => multiplicative version
@@ -142,7 +147,9 @@ summary(fc_hw_mul_d) #data
 checkresiduals(fc_hw_mul_d) #residuals = white noise (within blue lines) ?
 accuracy(fc_hw_mul_d, test) #accuracy - Holt-Winters (multiplicative & damped)
 
+
 # METHOD 9 : ETS model = Errors, Trends, Seasonality  (= Automatic Best Model Selection)
+
 # "innovations state space model"
 # Error = Additive or Multiplicative (= noise increases with level of series)
 # Trend = None, Additive, Damped
@@ -157,29 +164,92 @@ summary(fc_ets) #data
 checkresiduals(fc_ets) #residuals = white noise (within blue lines) ?
 accuracy(fc_ets, test) #accuracy - ETS (Error,Trend,Seasonal)
 
+
+# METHOD 10 : ARIMA
+
+farima <- function(x, h) {
+  forecast(auto.arima(x),h = h, stepwise = FALSE)
+}
+fc_arima <- farima(train, h = 6)
+autoplot(fc_arima) + autolayer(test, series = "Test") + autolayer(fitted(fc_arima), series='Fitted') #plot
+summary(fc_arima) #data
+checkresiduals(fc_arima) #residuals = white noise (within blue lines) ?
+accuracy(fc_arima, test) #accuracy - ARIMA
+
+
+# METHOD 11 : Dynamic regression 
+
+# no external data 
+
+
+# METHOD 12 : Dynamic Harmonic regression
+
+# USing Fourier terms (sums of sin & cos)
+# error term to be modeled as a non-seasonal ARIMA process
+# assumes the seasonal pattern does not change over time! 
+# K decides the "wiggly"-ness of the seasonal pattern
+# => try various values for K and select model with lowest AICc value!
+# K can not be more than m/2 (= half the seasonal period)
+harmonics <- fourier(train, K = 4)
+fit <- auto.arima(train, xreg = harmonics, seasonal = FALSE)
+newharmonics <- fourier(train, K = 4, h = 6)
+fc_harmonic <- forecast(fit, xreg = newharmonics)
+summary(fc_harmonic) #data
+checkresiduals(fc_harmonic) #residuals = white noise (within blue lines) ?
+accuracy(fc_harmonic, test) #accuracy - Dynamic Harmonic Regression (Fourier terms)
+# K = 1 : AICc=1212.48 
+# K = 2 : AICc=1198.88
+# K = 3 : AICc=1197.25
+# K = 4 : AICc=1175.57   # lowest AICc
+# K = 5 : AICc=1183.08
+# K = 6 : AICc=1185.81
+autoplot(fc_harmonic) + autolayer(test, series = "Test") + autolayer(fitted(fc_harmonic), series='Fitted') #plot
+
+
+# METHOD 13 : TBATS
+
+# Trigonometric terms for seasonality
+# Box-Cox transformations for heterogeneity
+# ARMA errors for short-term dynamics
+# Trend (possibly damped)
+# Seasonal (including multiple and non-integer periods)
+# = very general and handles a large range of time series
+# = useful for data with large seasonal periods, and multiple seasonal periods
+# entirely automated, but slow for long time series & often too wide prediction intervals
+# TBATS(Box-Cox parameter, ARMA error, Damping parameter, <Seasonal period,Fourier terms>)
+
+fc_tbats <- train %>% tbats() %>% forecast(h=6) # forecast
+autoplot(fc_tbats) + autolayer(test, series = "Test") + autolayer(fitted(fc_tbats), series='Fitted') #plot
+summary(fc_tbats) #data
+checkresiduals(fc_tbats) #residuals = white noise (within blue lines) ?
+accuracy(fc_tbats, test) #accuracy - TBATS
+
+
+# => ARIMA rules !
+# ETS close second : litte higher RMSE
+
+
 # Compare forecast methods - Cross Validation
-# Function to return ETS forecasts
-fets <- function(y, h) {
-  forecast(ets(y), h = h)
+# Function to return ETS & ARIMA forecasts
+fets <- function(x, h) {
+  forecast(ets(x), h = h)
+}
+farima <- function(x, h) {
+  forecast(auto.arima(x),h = h, stepwise = FALSE)
 }
 # Apply tsCV() for both methods
 e1 <- tsCV(train, forecastfunction = fets, h = 6)
 e2 <- tsCV(train, forecastfunction = snaive, h = 6)
 e3 <- tsCV(train, forecastfunction = holt, h = 6)
 e4 <- tsCV(train, forecastfunction = hw, h = 6)
-# Compute MSE of resulting errors : take model with lowest MSE
+e5 <- tsCV(train, forecastfunction = farima, h = 6)
+# Compute RMSE of resulting errors : take model with lowest RMSE
 sqrt(mean(e1^2, na.rm = TRUE))
 sqrt(mean(e2^2, na.rm = TRUE))
 sqrt(mean(e3^2, na.rm = TRUE))
 sqrt(mean(e4^2, na.rm = TRUE))
-
-
-# Method 10 : 
-
-
-
-
-
+sqrt(mean(e5^2, na.rm = TRUE))
+# Lowest RMSE after cross validation ?  => ETS (snaive even lower than arima?)
 
 
 
