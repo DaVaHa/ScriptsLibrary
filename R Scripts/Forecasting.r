@@ -211,6 +211,90 @@ autoplot(train) + autolayer(fc1)
 accuracy(fc, ausbeer)
 
 
+# BoxCox transformation
+# = to stabilize variation in time series as level of series increases
+# Transformations : square root (x^0.5), cube root (x^0.3333), logarithm(log(x)), inverse (-1/x)
+# BoxCox : log(x) when lambda = 0 & (x^lambda-1)/lambda when lambda != 0
+# lambda = 1 : no substantive transformation
+# lambda = 0.5 : square root plus linear transformation
+# lambda = 1/3 : cube root plus linear tranformation
+# lambda = 0 : natural logarithm transformation
+# lambda = -1 : inverse transformation
+# recommended to use : -1 <= lambda <= 1
+# Not common to use BoxCox transformation for ETS model, as ETS can 
+# handle increasing variance with multiplicative error & seasonal components directly
+BoxCox.lambda(train)
+
+
+# METHOD 10 : ARIMA
+# AutoRegressive Integrated Moving Average models
+# Automatic best model based on minimized AICc
+# AICc only usable within same class of model (so not for comparison between ETS & ARIMA)
+# Autoregressive (AR) = regression of time series with lagged observations as predictors
+# Moving average (MA) = regression with lagged errors as predictors
+# ARMA = AR + MA = lagged observations & errors as predictors
+# => can only work with stationary data, so might need to difference data first
+# I = Integrated = differenced d times to make series stationary => ARIMA(p,d,q)
+# p = number of ordinary AR lags
+# d = number of lag-1 differences
+# q = number of ordinary MA lags
+# drift = coefficient c
+# auto.arima() : model will be fitted to the transformed data
+# & forecasts will be back-transformed onto the original scale
+fit <- auto.arima(usnetelec)
+summary(fit)
+# Model with chosen parameters
+Arima(order= c(1,1,1), include.constant = TRUE)
+# Example
+austa %>% 
+  Arima(order = c(0, 2, 1), include.constant = FALSE) %>% 
+  forecast() %>% 
+  autoplot()
+
+# Don't use the default stepwise search : might find better model, but takes longer to run!
+fit2 <- auto.arima(euretail, stepwise = FALSE)
+
+# Compare ETS with ARIMA (1)
+# Use time series cross-validation to compare ARIMA with ETS model
+# Set up forecast functions for ETS and ARIMA models
+fets <- function(x, h) {
+  forecast(ets(x), h = h)
+}
+farima <- function(x, h) {
+  forecast(auto.arima(x),h = h)
+}
+# Fit an ARIMA and an ETS model to the training data
+train <- window(qcement, start = 1988, end = c(2007,4))
+# Compute CV errors for ETS & ARIMA
+e1 <- tsCV(train, forecastfunction = fets, h = 4)
+e2 <- tsCV(train, forecastfunction = farima, h = 4)
+# Find MSE of each model class
+mean(e1^2, na.rm = TRUE)
+mean(e2^2, na.rm = TRUE)
+
+# Compare ETS with ARIMA (2)
+fit1 <- ets(train)
+fit2 <- auto.arima(train)
+# Check that both models have white noise residuals
+checkresiduals(fit1)
+checkresiduals(fit2)
+# Produce forecasts for each model
+fc1 <- forecast(fit1, h = 8)
+fc2 <- forecast(fit2, h = 8)
+# Use accuracy() to find better model based on RMSE
+accuracy(fc1, qcement)
+accuracy(fc2, qcement)
+# Plot 10-year forecasts using the best model class
+qcement %>% farima(h=8) %>% autoplot()
+
+
+
+
+
+
+
+
+
 
 
 

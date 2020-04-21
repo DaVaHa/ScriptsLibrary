@@ -198,7 +198,9 @@ mse <- colMeans(e^2, na.rm = TRUE)
 # Plot the MSE values against the forecast horizon
 data.frame(h = 1:8, MSE = mse) %>%
   ggplot(aes(x = h, y = MSE)) + geom_point()
-  
+ 
+### Exponential smoothing ###
+
 # Simple Exponential Smoothing (SES) 
 # more recent observations get more weight
 # forecast is same for all point forecasts = mean of the future possible paths
@@ -335,7 +337,194 @@ summary(fit)
 fit %>% forecast(h=20) %>% autoplot()
 
 
+### Forecasting with ARIMA models ###
 
+# ARIMA models provide another approach to time series forecasting. 
+# Exponential smoothing and ARIMA models are the two most widely-used approaches to time series forecasting, 
+# and provide complementary approaches to the problem. While exponential smoothing models are based on 
+# a description of the trend and seasonality in the data, ARIMA models aim to describe the autocorrelations in the data.
+
+# Transformations for variance stabilization
+# If data show increasing variation as the level of the series increases, then a transformation can be useful
+# square root (x^0.5), cube root (x^0.3333), logarithm(log(x)), inverse (-1/x)
+
+# close to member of family of Box-plot transformations
+# log(x) when lambda = 0 & (x^lambda-1)/lambda when lambda != 0
+
+# lambda = 1 : no substantive transformation
+# lambda = 0.5 : square root plus linear transformation
+# lambda = 1/3 : cube root plus linear tranformation
+# lambda = 0 : natural logarithm transformation
+# lambda = -1 : inverse transformation
+
+# Box-Cox transformation to balance variation across the series
+BoxCox.lambda(usmelec)  # recommended to use : -1  <= lambda <= 1
+# Not common to use BoxCox transformation with ETS model, as ETS can 
+# handle increasing variance with multiplicative error & seasonal components directly
+usmelec %>% ets(lambda = -0.57) %>% forecast(h = 60) %>% autoplot()
+
+boxcox_lambda <- BoxCox.lambda(train)
+fc_ets_lambda <- train %>% ets(lambda=boxcox_lambda) %>% forecast(h=6) # forecast
+autoplot(fc_ets_lambda) + autolayer(test, series = "Test") + autolayer(fitted(fc_ets_lambda), series='Fitted') #plot
+summary(fc_ets_lambda) #data
+checkresiduals(fc_ets_lambda) #residuals = white noise (within blue lines) ?
+accuracy(fc_ets_lambda, test) #accuracy - ETS (Error,Trend,Seasonal) (BoxCox transformation)
+
+# Plot the series
+autoplot(a10)
+# Try four values of lambda in Box-Cox transformations
+a10 %>% BoxCox(lambda = 0.0) %>% autoplot()
+a10 %>% BoxCox(lambda = 0.1) %>% autoplot()
+a10 %>% BoxCox(lambda = 0.2) %>% autoplot()
+a10 %>% BoxCox(lambda = 0.3) %>% autoplot()
+# Compare with BoxCox.lambda()
+BoxCox.lambda(a10)
+
+# Non-seasonal differencing for stationarity
+# Differencing is a way of making a time series stationary; 
+# this means that you remove any systematic patterns such as trend and seasonality from the data. 
+# A white noise series is considered a special case of a stationary time series.
+# With non-seasonal data, you use lag-1 differences to model changes between observations 
+# rather than the observations directly. You have done this before by using the diff() function.
+
+# Seasonal differencing for stationarity
+# Plot the data
+autoplot(h02)
+# Take logs and seasonal differences of h02
+difflogh02 <- diff(log(h02), lag = 12)
+# Plot difflogh02
+autoplot(difflogh02)
+# Take another difference and plot
+ddifflogh02 <- diff(difflogh02)
+autoplot(ddifflogh02)
+# Plot ACF of ddifflogh02
+ggAcf(ddifflogh02)
+
+# Autoregressive Integrated Moving Average models = ARIMA #
+# Autoregressive (AR) = regression of time series with lagged observations as predictors
+# Moving average (MA) = regression with lagged errors as predictors
+# ARMA = AR + MA = lagged observations & errors as predictors
+# can only work with stationary data, so need to difference data first
+# I = Integrated = differenced d times to make series stationary => ARIMA(p,d,q)
+# p = number of ordinary AR lags
+# d = number of lag-1 differences
+# q = number of ordinary MA lags
+# drift = coefficient c
+fit <- auto.arima(usnetelec)
+summary(fit)
+# minimized AICc values (just like ETS), but cannot compare AICc between different types of models, only within same type of model
+
+# Hyndman-Khandakar algorithm : auto.arima()
+- select number of differences d via unit root tests
+- select p and q by minimizing AICc
+- estimate parameters using maximum likelihood estimation
+- use stepwise search to traverse model space, to save time
+
+# Fit an automatic ARIMA model to the austa series
+fit <- auto.arima(austa)
+# Check that the residuals look like white noise
+checkresiduals(fit)
+residualsok <- TRUE
+# Summarize the model
+summary(fit)
+# Find the AICc value and the number of differences used
+AICc <- -14.46
+d <- 1
+# Plot forecasts of fit
+fit %>% forecast(h = 10) %>% autoplot()
+
+# The Arima() function can be used to select a specific ARIMA model. 
+# Its first argument, order, is set to a vector that specifies the values of p, d and q. 
+# The second argument, include.constant, is a booolean that determines if the constant c, or drift, should be included. 
+# Below is an example of a pipe function that would plot forecasts of usnetelec from an ARIMA(2,1,2) model with drift:
+usnetelec %>%
+    Arima(order = c(2,1,2), include.constant = TRUE) %>%
+    forecast() %>%
+    autoplot()
+
+# Plot forecasts from an ARIMA(0,1,1) model with no drift
+austa %>% Arima(order = c(0, 1, 1), include.constant = FALSE) %>% forecast() %>% autoplot()
+# Plot forecasts from an ARIMA(2,1,3) model with drift
+austa %>% Arima(order = c(2,1,3), include.constant = TRUE) %>% forecast() %>% autoplot()
+# Plot forecasts from an ARIMA(0,0,1) model with a constant
+austa %>% Arima(order = c(0, 0, 1), include.constant = TRUE) %>% forecast() %>% autoplot()
+# Plot forecasts from an ARIMA(0,2,1) model with no constant
+austa %>% Arima(order = c(0, 2, 1), include.constant = FALSE) %>% forecast() %>% autoplot()
+
+# Use time series cross-validation to compare ARIMA with ETS model
+# Set up forecast functions for ETS and ARIMA models
+fets <- function(x, h) {
+  forecast(ets(x), h = h)
+}
+farima <- function(x, h) {
+  forecast(auto.arima(x),h = h)
+}
+# Compute CV errors for ETS on austa as e1
+e1 <- tsCV(austa, forecastfunction = fets, h = 1)
+# Compute CV errors for ARIMA on austa as e2
+e2 <- tsCV(austa, forecastfunction = farima, h = 1)
+# Find MSE of each model class
+mean(e1^2, na.rm = TRUE)
+mean(e2^2, na.rm = TRUE)
+# Plot 10-year forecasts using the best model class
+austa %>% farima(h=10) %>% autoplot()
+
+# Seasonal ARIMA models
+ARIMA(P,D,Q)m # seasonal part of model ARIMA(p,d,q)(P,D,Q)[m]:
+# P = number of seasonal AR lags
+# D = number of seasonal differences
+# Q = number of seasonal MA lags
+# m = seasonal period
+
+autoplot(debitcards) + 
+	xlab("Year") + ylab("million ISK") +
+	ggtitle("Retail debit card usage in Iceland")
+	
+fit <- auto.arima(debitcards, lambda = 0)  # lambda = 0 equals log transformation 
+fit %>% forecast(h = 36) %>% autoplot() + xlab("Year")
+
+# auto.arima() : model will be fitted to the transformed data, and forecasts will be back-transformed onto the original scale
+
+# Check that the logged h02 data have stable variance
+h02 %>% log() %>% autoplot()
+# Fit a seasonal ARIMA model to h02 with lambda = 0
+fit <- auto.arima(h02, lambda = 0)
+# Summarize the fitted model
+summary(fit)
+# Record the amount of lag-1 differencing and seasonal differencing used
+d <- 1
+D <- 1
+# Plot 2-year forecasts
+fit %>% forecast(h = 24) %>% autoplot()
+
+# Find an ARIMA model for euretail
+fit1 <- auto.arima(euretail)
+summary(fit1)
+# Don't use a stepwise search
+fit2 <- auto.arima(euretail, stepwise = FALSE)
+summary(fit2)
+# AICc of better model
+AICc <- 68.39
+# Compute 2-year forecasts from better model
+fit2 %>% forecast(h = 8) %>% autoplot()
+
+
+# Use 20 years of the qcement data beginning in 1988
+train <- window(qcement, start = 1988, end = c(2007,4))
+test <- window(qcement, start = c(2008,1), end = c(2014,1))
+# Fit an ARIMA and an ETS model to the training data
+fit1 <- auto.arima(train)
+fit2 <- ets(train)
+# Check that both models have white noise residuals
+checkresiduals(fit1)
+checkresiduals(fit2)
+# Produce forecasts for each model
+fc1 <- forecast(fit1, h = 25)
+fc2 <- forecast(fit2, h = 25)
+# Use accuracy() to find better model based on RMSE
+accuracy(fc1, qcement)
+accuracy(fc2, qcement)
+bettermodel <- fit2
 
 
 
