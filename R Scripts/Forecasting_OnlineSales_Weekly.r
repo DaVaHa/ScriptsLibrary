@@ -238,6 +238,7 @@ accuracy(fc_theta, test) #accuracy - Theta
 
 
 
+
 # => ARIMA rules !
 # ETS close second : litte higher RMSE
 

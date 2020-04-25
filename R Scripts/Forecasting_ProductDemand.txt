@@ -1,0 +1,110 @@
+## Forecasting Demand with time series ##
+
+# Loading time series into xts object
+
+# xts = extensible time series
+# = data matrix, indexed across time
+
+
+# Load xts package 
+library("xts")
+# Create the dates object as an index for your xts object
+dates <- seq(as.Date("2014-01-19"), length = 176, by = "weeks")
+# Create an xts object called bev_xts
+bev_xts <- xts(bev, order.by = dates)
+head(bev_xts[,"M.hi"])
+
+# Create the individual region sales as their own objects
+MET_hi <- bev_xts[,"MET.hi"]
+MET_lo <- bev_xts[,"MET.lo"]
+MET_sp <- bev_xts[,"MET.sp"]
+# Sum the region sales together
+MET_t <- MET_hi + MET_lo + MET_sp
+# Plot the metropolitan region total sales
+plot(MET_t)
+
+# ARIMA Time Series 101
+# AutoRegressive Integrated Moving Average 
+# Short-memory models - effects quickly disappear completely
+
+# Splitting data into training & validation
+M_t_train <- M_t[index(M_t) < "2017-01-01"]
+M_t_valid <- M_t[index(M_t) >= "2017-01-01"]
+auto.arima(M_t_train)
+
+# Create the individual region sales as their own objects
+MET_hi <- bev_xts[,"MET.hi"]
+MET_lo <- bev_xts[,"MET.lo"]
+MET_sp <- bev_xts[,"MET.sp"]
+# Sum the region sales together
+MET_t <- MET_hi + MET_lo + MET_sp
+# Plot the metropolitan region total sales
+plot(MET_t)
+
+# Time series = signal + noise
+# Forecasts extrapolate signal portion of model
+# Confidence intervals account for uncertainty ( noise)
+
+# Mean Absolute Error (MAE) (scale dependent)
+# Mean Absolute Percentage Error (MAPE) (scale independent)
+
+# Forecast the first 22 weeks of 2017
+forecast_MET_t <- forecast(MET_t_model, h = 22)
+# Plot this forecast #
+plot(forecast_MET_t)
+
+# Convert to numeric for ease
+for_MET_t <- as.numeric(forecast_MET_t$mean)
+v_MET_t <- as.numeric(MET_t_valid)
+# Calculate the MAE
+MAE <- mean(abs(for_MET_t - v_MET_t))
+# Calculate the MAPE
+MAPE <- 100*mean(abs((for_MET_t - v_MET_t))/v_MET_t)
+# Print to see how good your forecast is!
+print(MAE)
+print(MAPE)
+
+# Convert your forecast to an xts object
+for_dates <- seq(as.Date("2017-01-01"), length = 22, by = "weeks")
+for_MET_t_xts <- xts(forecast_MET_t$mean, order.by = for_dates)
+# Plot the validation data set
+plot(for_MET_t_xts, main = 'Forecast Comparison', ylim = c(4000, 8500))
+# Overlay the forecast of 2017
+lines(for_MET_t_xts, col = "blue")
+
+# Plot the validation data set
+plot(MET_t_valid, main = 'Forecast Comparison', ylim = c(4000, 8500))
+# Overlay the forecast of 2017
+lines(for_MET_t_xts, col = "blue")
+# Convert the limits to xts objects
+lower <- xts(forecast_MET_t$lower[,2], order.by = for_dates)
+upper <- xts(forecast_MET_t$upper[,2], order.by = for_dates)
+# Adding confidence intervals of forecast to plot
+lines(lower, col = "blue", lty = "dashed")
+lines(upper, col = "blue", lty = "dashed")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

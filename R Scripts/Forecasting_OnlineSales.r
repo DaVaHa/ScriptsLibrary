@@ -231,6 +231,14 @@ summary(fc_theta) #data
 checkresiduals(fc_theta) #residuals = white noise (within blue lines) ?
 accuracy(fc_theta, test) #accuracy - Theta 
 
+# METHOD 15 : Cubic Spline method
+
+fc_spline <- train %>% splinef() %>% forecast(h=6) # forecast
+autoplot(fc_spline) + autolayer(test, series = "Test") + autolayer(fitted(fc_spline), series='Fitted') #plot
+summary(fc_spline) #data
+checkresiduals(fc_spline) #residuals = white noise (within blue lines) ?
+accuracy(fc_spline, test) #accuracy - Cubic Spline 
+
 
 
 # => ARIMA rules !
