@@ -83,24 +83,278 @@ upper <- xts(forecast_MET_t$upper[,2], order.by = for_dates)
 lines(lower, col = "blue", lty = "dashed")
 lines(upper, col = "blue", lty = "dashed")
 
+# Price elasticity
+
+# Save the prices of each product
+l_MET_hi_p <- as.vector(log(bev_xts_train[,"MET.hi.p"]))
+# Save as a data frame
+MET_hi_train <- data.frame(as.vector(log(MET_hi)), l_MET_hi_p)
+colnames(MET_hi_train) <- c("log_sales", "log_price")
+# Calculate the regression
+model_MET_hi <- lm(log_sales ~ log_price, data = MET_hi_train)
+
+# Seasonal / holiday / promotional effects
+
+Linear Regression to see statistically significant relationship 
+
+v.dates <- as.Date(c("2014-02-09","2015-02-08","2016-02-07"))
+valentine <- as.xts(rep(1,3), order.by = v.dates)
+dates_train <- seq(as.Date("2014-01-19"), length = 154, by = "weeks")
+valentine <- merge(valentine, dates_train, fill = 0)
+
+# Plot the product's sales
+plot(MET_hi)
+# Plot the product's price
+plot(MET_hi_p)
+
+# Create date indices for New Year's week
+n.dates <- as.Date(c("2014-12-28", "2015-12-27", "2016-12-25"))
+# Create xts objects for New Year's
+newyear <- as.xts(rep(1, 3), order.by = n.dates)
+# Create sequence of dates for merging
+dates_train <- seq(as.Date("2014-01-19"), length = 154, by = "weeks")
+# Merge training dates into New Year's object
+newyear <- merge(newyear, dates_train, fill = 0)
+newyear
+
+# Create MET_hi_train_2 by adding newyear
+MET_hi_train_2 <- data.frame(MET_hi_train, as.vector(newyear))
+colnames(MET_hi_train_2)[3] <- "newyear"
+# Build regressions for the product
+model_MET_hi_full <- lm(log_sales ~ log_price + newyear, data = MET_hi_train_2)
+summary(model_MET_hi_full)
+
+# Future input variables
+# need future input variables to predict forecasts
+# holidays and promotions are known ahead of time
+# Prices are possible problem  : assume set prices or forecast future prices with time series
+
+# Subset the validation prices #
+l_MET_hi_p_valid <- as.vector(log(bev_xts_valid[,"MET.hi.p"]))
+# Create a validation data frame #
+MET_hi_valid <- data.frame(l_MET_hi_p_valid)
+colnames(MET_hi_valid) <- "log_price"
+
+# Predict the log of sales for your high end product
+pred_MET_hi <- predict(model_MET_hi, MET_hi_valid)
+# Convert predictions out of log scale
+pred_MET_hi <- exp(pred_MET_hi)
+
+# Convert to an xts object
+dates_valid <- seq(as.Date("2017-01-01"), length = 22, by = "weeks")
+pred_MET_hi_xts <- xts(pred_MET_hi, order.by = dates_valid)
+# Plot the forecast
+plot(pred_MET_hi_xts)
+# Calculate and print the MAPE
+MET_hi_v <- bev_xts_valid[,"MET.hi"]
+MAPE <- 100*mean(abs((pred_MET_hi_xts - MET_hi_v)/MET_hi_v))
+print(MAPE)
+
+ 
+## Blending regression with time series ##
+
+# reduce errors : 
+# - add more variables 
+# - use time series if residuals are related over time
+
+residuels(model)
+xts(residuals, order.by = dates_train)
+hist(xts_res)
+plot(xts_res)
+
+# Calculate the residuals from the model
+MET_hi_full_res <- residuals(model_MET_hi_full)
+# Convert the residuals to an xts object
+MET_hi_full_res <- xts(MET_hi_full_res, order.by = dates_train)
+# Plot the histogram of the residuals
+hist(MET_hi_full_res)
+# Plot the residuals over time
+plot(MET_hi_full_res)
+
+# Build an ARIMA model on the residuals: MET_hi_arima
+MET_hi_arima <- auto.arima(MET_hi_full_res)
+# Look at a summary of the model
+summary(MET_hi_arima)
+# Forecast 22 weeks with your model: for_MET_hi_arima
+for_MET_hi_arima <- forecast(MET_hi_arima, h = 22)
+# Print first 10 observations
+head(for_MET_hi_arima, n = 10)
+# Convert your forecasts into an xts object
+dates_valid <- seq(as.Date("2017-01-01"), length = 22, by = "weeks")
+for_MET_hi_arima <- xts(for_MET_hi_arima$mean, order.by = dates_valid)
+# Plot the forecast
+plot(for_MET_hi_arima)
+
+# Transfer functions & ensembling
+Demand = inputs (regression) + errors (time series)
+
+# Convert your residual forecast to the exponential version
+for_MET_hi_arima <- exp(for_MET_hi_arima)
+# Multiply your forecasts together!
+for_MET_hi_final <- pred_MET_hi_xts * for_MET_hi_arima
+
+# Plot the final forecast - don't touch the options!
+plot(for_MET_hi_final, ylim = c(1000, 4300))
+# Overlay the validation data set
+lines(MET_hi_v, col = "blue")
+
+# Calculate the MAE
+MAE <- mean(abs(for_MET_hi_final - MET_hi_v))
+print(MAE)
+# Calculate the MAPE
+MAPE <- 100*mean(abs((for_MET_hi_final - MET_hi_v)/MET_hi_v))
+print(MAPE)
+
+# Build an ARIMA model using the auto.arima function
+MET_hi_model_arima <- auto.arima(MET_hi)
+# Forecast the ARIMA model
+for_MET_hi <- forecast(MET_hi_model_arima, h = 22)
+# Save the forecast as an xts object
+dates_valid <- seq(as.Date("2017-01-01"), length = 22, by = "weeks")
+for_MET_hi_xts <- xts(for_MET_hi$mean, order.by = dates_valid)
+# Calculate the MAPE of the forecast
+MAPE <- 100*mean(abs((for_MET_hi_xts - MET_hi_v)/MET_hi_v))
+print(MAPE)
+
+# Ensemble the two forecasts together
+for_MET_hi_en <- 0.5 * (for_MET_hi_xts + pred_MET_hi_xts)
+# Calculate the MAE and MAPE
+MAE <- mean(abs(for_MET_hi_en - MET_hi_v))
+print(MAE)
+MAPE <- 100*mean(abs((for_MET_hi_en - MET_hi_v)/MET_hi_v))
+print(MAPE)
 
 
+## BOTTOM-UP HIERARCHICAL FORECASTING ##
+
+# Build a time series model 
+MET_sp_model_arima <- auto.arima(MET_sp)
+# Forecast the time series model for 22 periods
+for_MET_sp <- forecast(MET_sp_model_arima, h = 22)
+# Create an xts object
+for_MET_sp_xts <- xts(for_MET_sp$mean, order.by = dates_valid )
+# Calculate the MAPE
+MAPE <- mape(for_MET_sp_xts, MET_sp_v)
+print(MAPE)
+
+# Build a regression model
+model_MET_sp_full <- lm(log_sales ~ log_price + christmas + valentine + newyear + mother, data = MET_sp_train)
+# Forecast the regression model
+pred_MET_sp <- predict(model_MET_sp_full, MET_sp_valid)
+# Exponentiate your predictions and create an xts object
+pred_MET_sp <- exp(pred_MET_sp)
+pred_MET_sp_xts <- xts(pred_MET_sp, order.by = dates_valid)
+# Calculate MAPE
+MAPE <- mape(pred_MET_sp_xts, MET_sp_v)
+print(MAPE)
+
+# Ensemble the two forecasts
+for_MET_sp_en <- 0.5 * ( pred_MET_sp_xts + for_MET_sp_xts )
+# Calculate the MAPE
+MAPE <- mape(for_MET_sp_en, MET_sp_v)
+print(MAPE)
+
+# Calculate the metropolitan regional sales forecast
+for_MET_total <- pred_MET_hi_xts + for_MET_sp_en + pred_MET_lo_xts
+# Calculate a validation data set 
+MET_t_v <- bev_xts_valid[,"MET.hi"] + bev_xts_valid[,"MET.lo"] + bev_xts_valid[,"MET.sp"]
+# Calculate the MAPE
+MAPE <- mape(for_MET_total,MET_t_v)
+print(MAPE)
 
 
+## TOP-DOWN HIERARCHICAL FORECASTING ##
+
+# average of historical proportions = mean(product/region)
+# proportion of historical averages = mean(product)/mean(region)
+
+# Build a regional time series model
+MET_t_model_arima <- auto.arima(MET_total)
+# Calculate a 2017 forecast for 22 periods
+for_MET_t <- forecast(MET_t_model_arima, h = 22)
+# Make an xts object from your forecast
+for_MET_t_xts <- xts(for_MET_t$mean, order.by = dates_valid)
+# Calculate the MAPE
+MAPE <- mape(for_MET_t_xts, MET_t_v)
+print(MAPE)
+
+# Calculate the average historical proportions
+prop_hi <- mean(MET_hi/MET_total)
+prop_lo <- mean(MET_lo/MET_total)
+prop_sp <- mean(MET_sp/MET_total)
+# Distribute out your forecast to each product
+for_prop_hi <- prop_hi * for_MET_t_xts
+for_prop_lo <- prop_lo * for_MET_t_xts
+for_prop_sp <- prop_sp * for_MET_t_xts
+# Calculate the MAPE's for each product
+MAPE_hi <- mape(for_prop_hi, MET_hi_v)
+print(MAPE_hi)
+MAPE_lo <- mape(for_prop_lo, MET_lo_v)
+print(MAPE_lo)
+MAPE_sp <- mape(for_prop_sp, MET_sp_v)
+print(MAPE_sp)
+
+# Calculate the proportion of historical averages
+prop_hi_2 <- mean(MET_hi)/mean(MET_total)
+prop_lo_2 <- mean(MET_lo)/mean(MET_total)
+prop_sp_2 <- mean(MET_sp)/mean(MET_total)
+# Distribute out your forecast to each product
+for_prop_hi_2 <- prop_hi_2*for_MET_t_xts
+for_prop_lo_2 <- prop_lo_2*for_MET_t_xts
+for_prop_sp_2 <- prop_sp_2*for_MET_t_xts
+# Calculate the MAPEs for each product
+MAPE_hi <- mape(for_prop_hi_2, MET_hi_v)
+print(MAPE_hi)
+MAPE_lo <- mape(for_prop_lo_2, MET_lo_v)
+print(MAPE_lo)
+MAPE_sp <- mape(for_prop_sp_2, MET_sp_v)
+print(MAPE_sp)
 
 
+## MIDDLE-OUT HIERARCHICAL FORECASTING ##
+
+## Bottom-up : best but time-consuming
+## Top-down : fast but not accurate
+## Middle-out : middle of road option
+
+# Build a time series model for the region
+SEC_t_model_arima <- auto.arima(SEC_total)
+# Forecast the time series model
+for_SEC_t <- forecast(SEC_t_model_arima, h = 22)
+# Make into an xts object
+for_SEC_t_xts <- xts(for_SEC_t$mean, order.by = dates_valid)
+# Calculate the MAPE
+MAPE <- mape(for_SEC_t_xts, SEC_t_v)
+print(MAPE)
+
+# Calculate the average of historical proportions
+prop_hi <- mean(SEC_hi/SEC_total)
+prop_lo <- mean(SEC_lo/SEC_total)
+# Distribute the forecast
+for_prop_hi <- prop_hi*for_SEC_t_xts
+for_prop_lo <- prop_lo*for_SEC_t_xts
+# Calculate a MAPE for each product
+MAPE_hi <- mape(for_prop_hi, SEC_hi_v)
+print(MAPE_hi)
+MAPE_lo <- mape(for_prop_lo, SEC_lo_v)
+print(MAPE_lo)
+
+# Calculate the state sales forecast: for_state
+for_state <- for_SEC_t_xts + for_MET_t_xts + for_M_t_xts
+# See the forecasts
+for_state
 
 
+# Recap
+- Time series to forecast demand
+- Use Linear Regression to incorporate external factors in demand forecast
+- Blending time series and linear regression approach together
+- Hierarchical forecasting : reconcile up and/or down
 
-
-
-
-
-
-
-
-
-
+=> Extensions : 
+- More external factors : Competitor prices etc.
+- Use time series to forecast future proportions in hierarchies
+- More time series techniques than ARIMA (neural networks, exponential smoothing methods etc.)
 
 
 
