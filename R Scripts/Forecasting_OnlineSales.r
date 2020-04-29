@@ -184,7 +184,7 @@ accuracy(fc_arima, test) #accuracy - ARIMA
 
 # METHOD 12 : Dynamic Harmonic regression
 
-# USing Fourier terms (sums of sin & cos)
+# Using Fourier terms (sums of sin & cos)
 # error term to be modeled as a non-seasonal ARIMA process
 # assumes the seasonal pattern does not change over time! 
 # K decides the "wiggly"-ness of the seasonal pattern

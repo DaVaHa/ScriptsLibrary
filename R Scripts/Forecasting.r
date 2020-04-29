@@ -9,6 +9,7 @@
 library("forecast")
 library("ggplot2")
 library("fpp2")
+library("readxl")
 
 # Create "ts" (time series) object
 mydata <- read_excel("exercise1.xlsx")
@@ -326,7 +327,7 @@ autoplot(fc)
 
 # METHOD 13 : TBATS
 
-# TBATS model 
+# TBATS model : like dynamic harmonic regression but seasonality is allowed to change over time
 # Trigonometric terms for seasonality
 # Box-Cox transformations for heterogeneity
 # ARMA errors for short-term dynamics
@@ -352,8 +353,35 @@ lambda <- 0.082
 K <- 5
 
 
+# sMAPE : Symmetrical Mean Absolute Percentage Error
+# https://otexts.com/fpp3/accuracy.html
+abs_diff <- function(x,y){
+  200*abs(x - y)/(abs(x)+abs(y))
+}
+smape <- function(x,y) {
+  df <- data.frame(x,y)
+  #df <- df[x != 0 | y != 0,]
+  df$smape <- abs_diff(df$x, df$y)
+  df$smape[is.na(df$smape)] = 0
+  mean(df$smape)
+}
+x <- as.vector(c(1,2,4,0,1,0))
+y <- as.vector(c(1,3,4,0,1,0))
+smape(x,y)
 
 
+# Out-of-sample one-step forecasts
+#https://robjhyndman.com/hyndsight/out-of-sample-one-step-forecasts/
+
+# ARIMA : one-step forecast
+arima_model <- auto.arima(train)
+summary(arima_model)
+fit_arima <- Arima(test, model = arima_model)
+#summary(fit_arima)
+accuracy(fit_arima)
+fc_arima <- fitted(fit_arima)
+autoplot(train) + autolayer(test, series = "Test") + autolayer(fc_arima, series = "Forecast")
+accuracy(fc_arima, test)
 
 
 
