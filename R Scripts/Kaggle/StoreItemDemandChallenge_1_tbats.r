@@ -1,6 +1,6 @@
 # Store Item Demand Challenge #
 
-# Trial 1 : output with Seasonal Naive #
+# Trial 1 : output with TBATS #
 
 library("xts")
 library("forecast")
