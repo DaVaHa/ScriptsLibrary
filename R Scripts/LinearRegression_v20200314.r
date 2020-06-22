@@ -152,7 +152,12 @@ if (run_linear_regression) {
     summary(linReg)
   }
 }
-  
+
+# Check distribution of residuals
+qqnorm(linReg$residuals)
+qqline(linReg$residuals, col='red')
+
+
 # Variance Inflation Factor (VIF)
 # VIF = 1 means not correlated ; VIF = 5 means highly correlated (& should be removed from predictors)
 # Detects multicollinearity : how much the variance of coefficients is inflated because of correlation between predictors of the model
