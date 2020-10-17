@@ -6,15 +6,15 @@ library(RODBC)
 con <- odbcDriverConnect('driver={SQL Server};server=BIPROD;database=JBC_BI_Sandbox;trusted_connection=true') # werkt als je met VPN geconnecteerd bent
 
 # query
-query <- paste('SELECT * FROM CAR_Optin_2Y_All_v2;')
-query <- paste('SELECT * FROM JBC_BI_Sandbox.dbo.CAR_Optin_2Y_All_v2 where 1=1 ',
-               'and ONLINE between 0 and 1 and VLA  between 0 and 1 and Baby  between 0 and 1 and [Peuter(2-7j)]  between 0 and 1 ',
-               'and [Kind(7-14j)]  between 0 and 1 and Dames between 0 and 1 and Heren between 0 and 1 and OMZET between 0 and 1000 ',
-               'and OMZET_TARGET between 0 and 1000;')
+query <- paste('SELECT * FROM CAR_PredictKids_Pivot;')
 str(query)
 
 # query uitvoeren
 data <- sqlQuery(con, query)
+
+# rename columns
+#data <- data %>% rename(Kind = `Kind(7-14j)`)
+#data <- data %>% rename(Peuter = `Peuter(2-7j)`)
 
 # show output
 str(data)
@@ -45,9 +45,11 @@ data %>% dplyr :: select( names(dplyr::select_if(data, is.numeric)) )  %>%
 
 # Run regression model
 # 6. Run Linear Regression
-target_column <- 'OMZET_TARGET'   # target column
+target_column <- 'TARGET_ZOMER'   # target column
 columns_not_to_use <- c(
-  'CUSTOMERID','LFTD', 'OPTIN_NOOIT',' OPTIN_OOIT'
+  'CUSTOMERID','TARGET_WINTER', 'OMZET_TARGET', 'Dames','Heren', 'MARGE', 'TARGET_ZOMER'
+  # 'TNS19','Herfstfolder19','WinterSint19'
+#  'Heren', 'Dames', 'Kind', 'MARGE', 
 )
 
 # Train linear regression model on training data
@@ -64,7 +66,7 @@ summary(linReg)
 # 5. Remove outliers
 # Calculate Cook's distance & cutoff
 cooksd <- cooks.distance(linReg)
-outlier_cutoff <- 3
+outlier_cutoff <- 1
 cutoff <- outlier_cutoff * mean(cooksd, na.rm=TRUE)
 
 # Plot observations and cutoff line
@@ -79,6 +81,7 @@ str(data_excl_outliers)
 
 # Rerun linear regression
 linReg <- lm(formula_linreg, data = data_excl_outliers)
+formula_linreg
 summary(linReg)
 
 git # Check distribution of residuals : according to Quantile-Quantile line ?
@@ -103,32 +106,6 @@ abline(h=0, col='red')
 library(rms)
 vif(linReg)
 
-
-
-
-### LOOP OVER RANDOM % #### 
-# => GEMIDDELDE & VERDELING ??
-
-optin_values <- c()
-
-for (i in 1:100) {
-  random_sample <- sample_frac(data_excl_outliers, 0.10)
-  sample_linreg <- lm(formula_linreg, data = random_sample)
-  #print(summary(sample_linreg))
-  coefficient <- summary(sample_linreg)$coefficients[14,1]
-  optin_values <- append(optin_values, coefficient)
-}
-
-# number of optin values:
-print(paste("Nr of values ", length(optin_values)))
-print(head(optin_values))
-print(tail(optin_values))
-
-# Plot distribution
-hist(optin_values)
-
-# Calculate mean optin value !!
-print(paste("The value of an optin is :", mean(optin_values)))
 
 
 
